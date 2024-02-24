@@ -31,7 +31,7 @@
     </div>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script>
-        model = await tf.loadLayersModel('./model.json');
+
 
         let currentStream = null;
         const video = document.getElementById('webcam');
@@ -76,7 +76,7 @@
             labelContainer.textContent = `Emotion: ${emotions[maxIndex]}`;
             tf.dispose(predictions);
 
-            setTimeout(predictEmotion, 500); // Repeat prediction every second
+            setTimeout(predictEmotion, 1000); // Repeat prediction every second
         }
 
         document.getElementById('enableCam').addEventListener('click', () => enableWebcam());
