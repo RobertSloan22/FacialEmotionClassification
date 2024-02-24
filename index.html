@@ -31,6 +31,8 @@
     </div>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script>
+        model = await tf.loadLayersModel('./model.json');
+
         let currentStream = null;
         const video = document.getElementById('webcam');
         const labelContainer = document.getElementById('label-container');
