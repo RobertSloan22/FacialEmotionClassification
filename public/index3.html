@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Web Application with Emotion Detection</title>
+    <style>
+        video {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Web Application with Emotion Detection</h2>
+        <video id="webcam" autoplay muted playsinline></video>
+        <div>
+            <button id="enableCam">Enable Webcam</button>
+            <button id="detectEmotions">Detect Emotions</button>
+            <button id="useRearCamera">Use Rear Camera</button>
+            <button id="useFrontCamera">Use Front Camera</button>
+        </div>
+        <div id="label-container"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script>
+        let currentStream = null;
+        const video = document.getElementById('webcam');
+        const labelContainer = document.getElementById('label-container');
+        let model = null;
+        let isDetecting = false;
+
+        async function loadModel() {
+            labelContainer.textContent = 'Loading model...';
+            model = await tf.loadLayersModel('facialemotions/model.json');
+            labelContainer.textContent = 'Model loaded successfully';
+        }
+
+        async function enableWebcam(facingMode = 'user') {
+            if (navigator.mediaDevices.getUserMedia) {
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+                video.srcObject = stream;
+                currentStream = stream;
+            }
+        }
+
+        async function predictEmotion() {
+            if (!model || !isDetecting) {
+                console.error('Model not loaded or detection not enabled');
+                return;
+            }
+
+            const predictions = tf.tidy(() => {
+                const img = tf.browser.fromPixels(video).resizeNearestNeighbor([48, 48]).toFloat();
+                const offset = tf.scalar(255.0);
+                const normalized = img.div(offset);
+                const batched = normalized.expandDims(0);
+                return model.predict(batched);
+            });
+
+            const prediction = await predictions.data();
+            const maxIndex = prediction.indexOf(Math.max(...prediction));
+            const emotions = ['Happy', 'Sad', 'Surprise', 'Neutral'];
+            labelContainer.textContent = `Emotion: ${emotions[maxIndex]}`;
+            tf.dispose(predictions);
+
+            setTimeout(predictEmotion, 500); // Repeat prediction every second
+        }
+
+        document.getElementById('enableCam').addEventListener('click', () => enableWebcam());
+        document.getElementById('detectEmotions').addEventListener('click', () => {
+            isDetecting = true;
+            predictEmotion();
+        });
+        document.getElementById('useRearCamera').addEventListener('click', () => enableWebcam('environment'));
+        document.getElementById('useFrontCamera').addEventListener('click', () => enableWebcam('user'));
+
+        loadModel();
+    </script>
+</body>
+</html>

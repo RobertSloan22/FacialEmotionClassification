@@ -1,0 +1,516 @@
+
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head><script src="/docs/5.3/assets/js/color-modes.js"></script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+
+    <title>TensorFlowJS</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/jumbotron/">
+
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+<link href="/docs/5.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- Favicons -->
+<link rel="apple-touch-icon" href="/docs/5.3/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="manifest" href="/docs/5.3/assets/img/favicons/manifest.json">
+<link rel="mask-icon" href="/docs/5.3/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon.ico">
+<meta name="theme-color" content="#712cf9">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+
+      .b-example-divider {
+        width: 100%;
+        height: 3rem;
+        background-color: rgba(0, 0, 0, .1);
+        border: solid rgba(0, 0, 0, .15);
+        border-width: 1px 0;
+        box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+      }
+
+      .b-example-vr {
+        flex-shrink: 0;
+        width: 1.5rem;
+        height: 100vh;
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .btn-bd-primary {
+        --bd-violet-bg: #712cf9;
+        --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+        --bs-btn-font-weight: 600;
+        --bs-btn-color: var(--bs-white);
+        --bs-btn-bg: var(--bd-violet-bg);
+        --bs-btn-border-color: var(--bd-violet-bg);
+        --bs-btn-hover-color: var(--bs-white);
+        --bs-btn-hover-bg: #6528e0;
+        --bs-btn-hover-border-color: #6528e0;
+        --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+        --bs-btn-active-color: var(--bs-btn-hover-color);
+        --bs-btn-active-bg: #5a23c8;
+        --bs-btn-active-border-color: #5a23c8;
+      }
+
+      .bd-mode-toggle {
+        z-index: 1500;
+      }
+
+      .bd-mode-toggle .dropdown-menu .active .bi {
+        display: block !important;
+      }
+    </style>
+
+    
+  </head>
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+      <symbol id="check2" viewBox="0 0 16 16">
+        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+      </symbol>
+      <symbol id="circle-half" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
+      </symbol>
+      <symbol id="moon-stars-fill" viewBox="0 0 16 16">
+        <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+        <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+      </symbol>
+      <symbol id="sun-fill" viewBox="0 0 16 16">
+        <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+      </symbol>
+    </svg>
+
+    <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+      <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
+              id="bd-theme"
+              type="button"
+              aria-expanded="false"
+              data-bs-toggle="dropdown"
+              aria-label="Toggle theme (auto)">
+        <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#circle-half"></use></svg>
+        <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+        <li>
+          <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+            <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em"><use href="#sun-fill"></use></svg>
+            Light
+            <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+            <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em"><use href="#moon-stars-fill"></use></svg>
+            Dark
+            <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+            <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em"><use href="#circle-half"></use></svg>
+            Auto
+            <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    
+<main>
+  <div class="container py-4">
+    <header class="pb-3 mb-4 border-bottom">
+      <a href="/" class="d-flex align-items-center text-body-emphasis text-decoration-none">
+        <span class="fs-4">TensorFlow Java Script - Deep Convolutional Neural Network </span>
+      </a>
+    </header>
+
+    <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">TensorFlow.js Transfer Learning Demo: Robert Sloan</h1>
+        
+   
+    <h1>Deep Neural Network In the Browser Runtime </h1>    
+    <p id="status">Awaiting TF.js load</p>
+    <div id="container">
+      <video id="webcam" autoplay muted></video>
+    
+    </div>
+ 
+    <button id="enableCam" class="btn btn-primary btn-lg">Enable Webcam</button>
+
+    <button id="train">Train &amp; Predict!</button>
+    <button class="dataCollector" data-1hot="0" data-name="Class 1">Gather Class 1 Data</button>
+    <button class="dataCollector" data-1hot="1" data-name="Class 2">Gather Class 2 Data</button>
+    <button id="train">Train &amp; Predict!</button>
+    <button id="reset">Reset</button>
+    <!-- bootstrap5 cdn-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Import TensorFlow.js library -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- Import the page's JavaScript to do some stuff -->
+        <p class="col-md-8 fs-4">Step 1: Enable Web Cam / Step 2: Gather Data on Items 1&2 / Step 3: Train and Predict.</p>
+      </div>
+    </div>
+
+    <div class="row align-items-md-stretch">
+      <div class="col-md-6">
+        <div class="h-100 p-5 text-bg-dark rounded-3">
+            <h2>Facial Emotion Recognition</h2>
+            <button id="startButton">Enable Webcam</button>
+            <button id="stopButton">Disable Webcam</button>
+            <div id="webcam-container"></div>
+            <button id="updateButton">Update Prediction</button>
+        
+            <div id="label-container"></div>
+
+          <div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.loom.com/embed/dc6b89bcc0ab4fef8fe0080e4486d0ac?sid=f8813885-798d-4c10-b9ae-5e3f2ffb8d41" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
+          <button class="btn btn-outline-light" type="button">Activate</button>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="h-100 p-5 bg-body-tertiary border rounded-3">
+          <h2>Chat With PDF </h2>
+
+          <p>.</p>
+          <button class="btn btn-outline-secondary" type="button">Activate</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pt-3 mt-4 text-body-secondary border-top">
+      &copy; 2023
+    </footer>
+  </div>
+  <script>
+    
+    let emotionmodel, video, startButton, emotionDisplay;
+
+    async function loadModel() {
+        emotionmodel = await tf.loadLayersModel('/odmjs/model.json');
+    }
+
+    async function startVideo() {
+        video = document.getElementById('video');
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+        } catch (err) {
+            console.error("Failed to start video: ", err);
+        }
+    }
+async function predictEmotion() {
+if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    let predictions;
+    try {
+        predictions = tf.tidy(() => {
+            const frame = tf.browser.fromPixels(video);
+            const resized = tf.image.resizeBilinear(frame, [48, 48]);
+            const normalized = resized.div(tf.scalar(255));
+            const batched = normalized.reshape([1, 48, 48, 3]);
+            return model.predict(batched);
+        });
+    } catch (err) {
+        console.error('Error during prediction:', err);
+        return;
+    }
+
+    const predictionArray = await predictions.array();
+    predictions.dispose();
+    const emotions = ['happy', 'sad', 'neutral', 'surprise'];
+    const highestIndex = predictionArray[0].indexOf(Math.max(...predictionArray[0]));
+    const emotion = emotions[highestIndex];
+    emotionDisplay.innerText = `Emotion: ${emotion}`;
+}
+}
+
+    startButton = document.getElementById('startButton');
+    emotionDisplay = document.getElementById('emotionDisplay');
+
+    startButton.addEventListener('click', () => {
+        predictEmotion();
+        setInterval(predictEmotion, 1000);
+    });
+
+    async function init() {
+        await loadModel();
+        await startVideo();
+    }
+
+    init();
+</script>
+  <script>
+    const STATUS = document.getElementById('status');
+      const VIDEO = document.getElementById('webcam');
+      const ENABLE_CAM_BUTTON = document.getElementById('enableCam');
+      const RESET_BUTTON = document.getElementById('reset');
+      const TRAIN_BUTTON = document.getElementById('train');
+      const MOBILE_NET_INPUT_WIDTH = 224;
+      const MOBILE_NET_INPUT_HEIGHT = 224;
+      const STOP_DATA_GATHER = -1;
+      const CLASS_NAMES = [];
+      const consoleLog = document.getElementById('console-log');
+
+      
+      ENABLE_CAM_BUTTON.addEventListener('click', enableCam);
+      TRAIN_BUTTON.addEventListener('click', trainAndPredict);
+      RESET_BUTTON.addEventListener('click', reset);
+      
+  
+      
+      function hasGetUserMedia() {
+        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+      }
+      
+      function enableCam() {
+        if (hasGetUserMedia()) {
+          // getUsermedia parameters.
+          const constraints = {
+            video: true,
+            width: 640, 
+            height: 480 
+          };
+      
+          // Activate the webcam stream.
+          navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+            VIDEO.srcObject = stream;
+            VIDEO.addEventListener('loadeddata', function() {
+              videoPlaying = true;
+              ENABLE_CAM_BUTTON.classList.add('removed');
+            });
+          });
+        } else {
+          console.warn('getUserMedia() is not supported by your browser');
+        }
+      }
+      //////
+      function trainAndPredict() {
+        async function trainAndPredict() {
+        predict = false;
+        tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
+        let outputsAsTensor = tf.tensor1d(trainingDataOutputs, 'int32');
+        let oneHotOutputs = tf.oneHot(outputsAsTensor, CLASS_NAMES.length);
+        let inputsAsTensor = tf.stack(trainingDataInputs);
+        
+        let results = await model.fit(inputsAsTensor, oneHotOutputs, {shuffle: true, batchSize: 5, epochs: 10, 
+            callbacks: {onEpochEnd: logProgress} });
+        
+        outputsAsTensor.dispose();
+        oneHotOutputs.dispose();
+        inputsAsTensor.dispose();
+        predict = true;
+        predictLoop();
+      }
+      ////
+      function logProgress(epoch, logs) {
+        console.log('Data for epoch ' + epoch, logs);
+      }
+        // TODO: Fill this out later in the codelab!
+      }
+      
+      
+      
+      
+      let dataCollectorButtons = document.querySelectorAll('button.dataCollector');
+      for (let i = 0; i < dataCollectorButtons.length; i++) {
+        dataCollectorButtons[i].addEventListener('mousedown', gatherDataForClass);
+        dataCollectorButtons[i].addEventListener('mouseup', gatherDataForClass);
+        // Populate the human readable names for classes.
+        CLASS_NAMES.push(dataCollectorButtons[i].getAttribute('data-name'));
+      }
+      
+      
+      function gatherDataForClass() {
+        let classNumber = parseInt(this.getAttribute('data-1hot'));
+        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+        dataGatherLoop();
+      }
+      
+      let mobilenet = undefined;
+      let gatherDataState = STOP_DATA_GATHER;
+      let videoPlaying = false;
+      let trainingDataInputs = [];
+      let trainingDataOutputs = [];
+      let examplesCount = [];
+      let predict = false;
+      
+      /**
+       * Loads the MobileNet model and warms it up so ready for use.
+       **/
+      async function loadMobileNetFeatureModel() {
+        const URL = 
+          'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1';
+        
+        mobilenet = await tf.loadGraphModel(URL, {fromTFHub: true});
+        STATUS.innerText = 'MobileNet v3 loaded successfully!';
+        
+        // Warm up the model by passing zeros through it once.
+        tf.tidy(function () {
+          let answer = mobilenet.predict(tf.zeros([1, MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH, 3]));
+          console.log(answer.shape);
+        });
+      }
+      
+      // Call the function immediately to start loading.
+      loadMobileNetFeatureModel();
+      
+      let model = tf.sequential();
+      model.add(tf.layers.dense({inputShape: [1024], units: 128, activation: 'relu'}));
+      model.add(tf.layers.dense({units: CLASS_NAMES.length, activation: 'softmax'}));
+      
+      model.summary();
+      
+      // Compile the model with the defined optimizer and specify a loss function to use.
+      model.compile({
+        // Adam changes the learning rate over time which is useful.
+        optimizer: 'adam',
+        // Use the correct loss function. If 2 classes of data, must use binaryCrossentropy.
+        // Else categoricalCrossentropy is used if more than 2 classes.
+        loss: (CLASS_NAMES.length === 2) ? 'binaryCrossentropy': 'categoricalCrossentropy', 
+        // As this is a classification problem you can record accuracy in the logs too!
+        metrics: ['accuracy']  
+      });
+      
+      
+      
+      
+      /**
+       * Handle Data Gather for button mouseup/mousedown.
+       **/
+      function gatherDataForClass() {
+        let classNumber = parseInt(this.getAttribute('data-1hot'));
+        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+        dataGatherLoop();
+      }
+      function dataGatherLoop() {
+        if (videoPlaying && gatherDataState !== STOP_DATA_GATHER) {
+          let imageFeatures = tf.tidy(function() {
+            let videoFrameAsTensor = tf.browser.fromPixels(VIDEO);
+            let resizedTensorFrame = tf.image.resizeBilinear(videoFrameAsTensor, [MOBILE_NET_INPUT_HEIGHT, 
+                MOBILE_NET_INPUT_WIDTH], true);
+            let normalizedTensorFrame = resizedTensorFrame.div(255);
+            return mobilenet.predict(normalizedTensorFrame.expandDims()).squeeze();
+          });
+      
+          trainingDataInputs.push(imageFeatures);
+          trainingDataOutputs.push(gatherDataState);
+          
+          // Intialize array index element if currently undefined.
+          if (examplesCount[gatherDataState] === undefined) {
+            examplesCount[gatherDataState] = 0;
+          }
+          examplesCount[gatherDataState]++;
+      
+          STATUS.innerText = '';
+          for (let n = 0; n < CLASS_NAMES.length; n++) {
+            STATUS.innerText += CLASS_NAMES[n] + ' data count: ' + examplesCount[n] + '. ';
+          }
+          window.requestAnimationFrame(dataGatherLoop);
+        }
+      }
+      
+      function predictLoop() {
+        if (predict) {
+          tf.tidy(function() {
+            let videoFrameAsTensor = tf.browser.fromPixels(VIDEO).div(255);
+            let resizedTensorFrame = tf.image.resizeBilinear(videoFrameAsTensor,[MOBILE_NET_INPUT_HEIGHT, 
+                MOBILE_NET_INPUT_WIDTH], true);
+      
+            let imageFeatures = mobilenet.predict(resizedTensorFrame.expandDims());
+            let prediction = model.predict(imageFeatures).squeeze();
+            let highestIndex = prediction.argMax().arraySync();
+            let predictionArray = prediction.arraySync();
+      
+            STATUS.innerText = 'Prediction: ' + CLASS_NAMES[highestIndex] + ' with ' + Math.floor(predictionArray[highestIndex] * 100) + '% confidence';
+          });
+      
+          window.requestAnimationFrame(predictLoop);
+        }
+      }
+      
+      async function trainAndPredict() {
+        predict = false;
+        tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
+        let outputsAsTensor = tf.tensor1d(trainingDataOutputs, 'int32');
+        let oneHotOutputs = tf.oneHot(outputsAsTensor, CLASS_NAMES.length);
+        let inputsAsTensor = tf.stack(trainingDataInputs);
+        
+        let results = await model.fit(inputsAsTensor, oneHotOutputs, {shuffle: true, batchSize: 5, epochs: 10, 
+            callbacks: {onEpochEnd: logProgress} });
+        
+        outputsAsTensor.dispose();
+        oneHotOutputs.dispose();
+        inputsAsTensor.dispose();
+        predict = true;
+        predictLoop();
+      }
+      
+      function logProgress(epoch, logs) {
+        console.log('Data for epoch ' + epoch, logs);
+      }
+      function reset() {
+        predict = false;
+        examplesCount.length = 0;
+        for (let i = 0; i < trainingDataInputs.length; i++) {
+          trainingDataInputs[i].dispose();
+        }
+        trainingDataInputs.length = 0;
+        trainingDataOutputs.length = 0;
+        STATUS.innerText = 'No data collected';
+        
+        console.log('Tensors in memory: ' + tf.memory().numTensors);
+      }
+      </script>>
+
+</main>
+<script src="/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    </body>
+</html>
