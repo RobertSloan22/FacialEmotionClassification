@@ -41,7 +41,7 @@
 
         async function loadModel() {
             labelContainer.textContent = 'Loading model...';
-            model = await tf.loadLayersModel('/model.json');
+            model = await tf.loadLayersModel('model.json');
             labelContainer.textContent = 'Model loaded successfully';
         }
 
