@@ -41,7 +41,7 @@
 
         async function loadModel() {
             labelContainer.textContent = 'Loading model...';
-            model = await tf.loadLayersModel('FacialEmotionClassification/public/facialemotions/model.json');
+            model = await tf.loadLayersModel('public/facialemotions/model.json');
             labelContainer.textContent = 'Model loaded successfully';
         }
 
