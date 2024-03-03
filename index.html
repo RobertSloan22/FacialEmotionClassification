@@ -1,93 +1,678 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Integrated Web Application with Emotion Detection</title>
+
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head><script src="/docs/5.3/assets/js/color-modes.js"></script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>TensorFlowJS</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/jumbotron/">
+
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+<link href="/docs/5.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
+
+    <!-- Favicons -->
+<link rel="apple-touch-icon" href="/docs/5.3/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="manifest" href="/docs/5.3/assets/img/favicons/manifest.json">
+<link rel="mask-icon" href="/docs/5.3/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
+<link rel="icon" href="/docs/5.3/assets/img/favicons/favicon.ico">
+<meta name="theme-color" content="#712cf9">
     <style>
-        video {
-            width: 100%;
-            max-width: 640px;
-            height: auto;
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
         }
-        .container {
-            text-align: center;
-            padding: 20px;
+            }
+      /* Base styles here */
+      
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        body {
+          font-size: 14px;
         }
+    
+    
+  /* Adjust layout, font sizes, and more for smaller screens */
+    }
+            .container {
+        width: 100%;
+        max-width: 1200px; /* or any maximum size */
+        margin: 0 auto;
+        padding: 10px;
+         /* centers the layout */
+      }
+      
+      .column {
+        float: left;
+        width: 50%; /* Example: for 2 columns layout */
+      }
+      
+      /* Clearfix for floating elements */
+      .row::after {
+        content: "";
+        clear: both;
+        display: table;
+      }
+
+      .b-example-divider {
+        width: 100%;
+        height: 3rem;
+        background-color: rgba(0, 0, 0, .1);
+        border: solid rgba(0, 0, 0, .15);
+        border-width: 1px 0;
+        box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+      }
+
+      .b-example-vr {
+        flex-shrink: 0;
+        width: 1.5rem;
+        height: 100vh;
+      }
+            img, video {
+        max-width: 100%;
+        height: auto;
+            }
+              @media (max-width: 768px) {
+        body {
+          font-size: 16px;
+          line-height: 1.5;
+        }
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      button {
+        margin: 30px; /* Adjust this value to add more or less space */
+      }
+
+      .btn-bd-primary {
+        --bd-violet-bg: #712cf9;
+        --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+        --width : 100%;
+        --bs-btn-font-weight: 600;
+        --bs-btn-color: var(--bs-white);
+        --bs-btn-bg: var(--bd-violet-bg);
+        --bs-btn-border-color: var(--bd-violet-bg);
+        --bs-btn-hover-color: var(--bs-white);
+        --bs-btn-hover-bg: #6528e0;
+        --bs-btn-hover-border-color: #6528e0;
+        --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+        --bs-btn-active-color: var(--bs-btn-hover-color);
+        --bs-btn-active-bg: #5a23c8;
+        --bs-btn-active-border-color: #5a23c8;
+      }
+
+      .bd-mode-toggle {
+        z-index: 1500;
+      }
+
+      .bd-mode-toggle .dropdown-menu .active .bi {
+        display: block !important;
+      }
+
+      #label-container {
+        font-size: 4em;
+    }
+    #status {
+      font-size: 2em;
+  }
+    #loadingIndicator {
+      font-size: 2em;
+  }
+  #col-md-6 {
+    font-size: 2em;
+    width: 100%;
+  }
+  button {
+    margin-top: 20px; /* Adjust this value to add more or less space */
+    margin-bottom: 20px; /* Adjust this value to add more or less space */
+  }
+
     </style>
 
-</head>
+    
+  </head>
 <body>
-    <div class="container">
-        <h2>Web Application with Emotion Detection</h2>
-        <video id="webcam" autoplay muted playsinline></video>
-        <div>
-            <button id="enableCam">Enable Webcam</button>
-            <button id="detectEmotions">Detect Emotions</button>
-            <button id="useRearCamera">Use Rear Camera</button>
-            <button id="useFrontCamera">Use Front Camera</button>
+  <header>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
+  </header>
+  <main>
+    <div class="container py-4">
+      <header class="pb-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center text-body-emphasis text-decoration-none">
+          <span class="fs-4">Choose to either - Train A Deep Neural Network OR Use an Emotion Detection Deep Neural Network </span>
+        </a>
+      </header>
+      <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+        <div class="container-fluid py-5">
+          <h1 class="display-5 fw-bold"> Tensorflow.js - Train A Deep Neural Network -</h1>
+          <h2> Step 1 for Training DNN & Emotion Detection is to Enable Web Camera </h2>
+          <div class="col-md-6">
+            <button id="enableCam" class="btn btn-primary mb-2">STEP 1 Enable Web Camera</button>
+            
+          </div>
+          <div class="d-flex align-items-center" id="status">
+            <strong role="status">Awaiting TF.js load</strong>
+            <div class="spinner-border ms-auto" id="loadingIndicator" style="visibility: visible;" role="status" aria-hidden="false"></div>
+          </div>
+          <div id="container">
+            <video id="webcam" autoplay muted playsinline></video>
+          </div>
+          <h3>Training Process:| Choose Camera Option | Collect Data for Object 1 | Collect Data for Object-2 | Train | Get Predictions</h3>
+          <div class="row">
+            <div class="col-md-6">
+              <button id="useRearCamera" class="btn btn-secondary mb-2">Use Rear Camera</button>
+      
+              <button id="useFrontCamera" class="btn btn-secondary mb-2">Use Front Camera</button>
+            </div>
+            <div class="col-md-6">
+            </div>
+            
+              <button class="dataCollector btn btn-primary mb-2" data-1hot="0" data-name="Class 1">Gather Object 1 Data</button>
+           
+           
+              <button class="dataCollector btn btn-primary mb-2" data-1hot="1" data-name="Class 2">Gather Object 2 Data</button>
+        
+          
+              <button id="train" class="btn btn-primary mb-2">Train &amp; Predict!</button>
+          
+              <button id="reset" class="btn btn-primary mb-2">Reset</button>
+        
+            <h2>Emotion Detection Deep Convolutional Neural Network</h2>  
+            <h3>Emotion Model Built and Trained by Robert Sloan</h3> 
+            <button id="detectEmotions" class="btn btn-primary mb-2">FEATURE 2: Detect Emotions</button>       
+            <div id="label-container"></div>
+          </div>
+         
         </div>
-        <div id="label-container"></div>
-    </div>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script>
+      <div>
+    
+      </div>
+
+     
 
 
-        let currentStream = null;
-        const video = document.getElementById('webcam');
-        const labelContainer = document.getElementById('label-container');
-        let model = null;
-        let isDetecting = false;
+  <script>
+document.getElementById('train').addEventListener('click', function() {
+  this.innerHTML = `
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span role="status">Loading...</span>
+  `;
+  this.disabled = true;
+  setTimeout (() => {
+    this.innerHTML = 'Train & Predict!';
+    this.disabled = false;
+  }, 7000);
+});
 
-        async function loadModel() {
-            labelContainer.textContent = 'Loading model...';
-            model = await tf.loadLayersModel('public/facialemotions/model.json');
-            labelContainer.textContent = 'Model loaded successfully';
-        }
+document.querySelectorAll('.dataCollector').forEach(button => {
+  button.addEventListener('click', () => {
+    if (button.classList.contains('active')) {
+      startDataCollection(button);
+    } else {
+      stopDataCollection(button);
+    }
+  });
+  setTimeout(() => {
+    button.classList.add('active');
+  }, 2000);
+});
 
-        async function enableWebcam(facingMode = 'user') {
-            if (navigator.mediaDevices.getUserMedia) {
-                if (currentStream) {
-                    currentStream.getTracks().forEach(track => track.stop());
-                }
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
-                video.srcObject = stream;
-                currentStream = stream;
-            }
-        }
+function startDataCollection(button) {
+  const dataName = button.getAttribute('data-name');
+  // Assuming you have a function named startCollection in your script tag
+  startCollection(dataName);
+}
 
-        async function predictEmotion() {
-            if (!model || !isDetecting) {
-                console.error('Model not loaded or detection not enabled');
-                return;
-            }
+function stopDataCollection(button) {
+  const dataName = button.getAttribute('data-name');
+  // Assuming you have a function named stopCollection in your script tag
+  stopCollection(dataName);
+}
 
-            const predictions = tf.tidy(() => {
-                const img = tf.browser.fromPixels(video).resizeNearestNeighbor([48, 48]).toFloat();
-                const offset = tf.scalar(255.0);
-                const normalized = img.div(offset);
-                const batched = normalized.expandDims(0);
-                return model.predict(batched);
+
+    document.addEventListener('DOMContentLoaded', function() {
+  // Show loading indicator
+  const loadingIndicator = document.getElementById('loadingIndicator');
+  loadingIndicator.style.visibility = 'visible';
+
+  // TensorFlow.js load check
+  if (typeof tf !== 'undefined') {
+    console.log('TensorFlow.js loaded successfully');
+    document.getElementById('status').textContent = 'TF.js Loaded';
+    loadingIndicator.style.visibility = 'hidden';
+  } else {
+    console.error('Failed to load TensorFlow.js');
+  }
+});
+
+// Event listeners for collect and stop buttons
+document.getElementById('collectClass1').addEventListener('click', function() {
+  startCollectingData(0); // Assuming 0 is the identifier for Class 1
+});
+document.getElementById('stopCollectClass1').addEventListener('click', function() {
+  stopCollectingData(0);
+});
+
+document.getElementById('collectClass2').addEventListener('click', function() {
+  startCollectingData(1); // Assuming 1 is the identifier for Class 2
+});
+document.getElementById('stopCollectClass2').addEventListener('click', function() {
+  stopCollectingData(1);
+});
+
+function startCollectingData(classId) {
+  console.log(`Start collecting data for class ${classId}`);
+  document.getElementById(`collectClass${classId + 1}`).style.display = 'none';
+  document.getElementById(`stopCollectClass${classId + 1}`).style.display = 'inline-block';
+  // Add data collection logic here
+}
+
+function stopCollectingData(classId) {
+  console.log(`Stop collecting data for class ${classId}`);
+  document.getElementById(`collectClass${classId + 1}`).style.display = 'inline-block';
+  document.getElementById(`stopCollectClass${classId + 1}`).style.display = 'none';
+  // Add logic to stop data collection here
+}
+
+
+ENABLE_CAM_BUTTON.addEventListener('click', enableCam);
+function loadTensorFlowJS() {
+  var script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js';
+  script.async = true;
+  script.onload = function() {
+    // TensorFlow.js loaded
+    console.log('TensorFlow.js loaded successfully');
+  };
+  document.head.appendChild(script);
+}
+
+// Call the function at an appropriate time (e.g., after your page has loaded)
+window.onload = loadTensorFlowJS;
+
+  // Checks if the browser supports the necessary API for video capture
+  function hasGetUserMedia() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  // Tries to enable the camera
+function enableCam() {
+  if (hasGetUserMedia()) {
+    // Change facingMode to 'environment' to use the rear camera.
+    const constraints = {
+      video: { facingMode: 'user', width: 840, height: 480 }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+      VIDEO.srcObject = stream;
+      VIDEO.addEventListener('loadeddata', function() {
+        // Additional checks or actions once the video stream is available
+      });
+    }).catch(function(error) {
+      console.error('Camera access denied:', error);
+    });
+  } else {
+    console.warn('getUserMedia() is not supported by your browser');
+  }
+}
+
+
+    
+
+</script>
+
+  <script>
+      const STATUS = document.getElementById('status');
+      const VIDEO = document.getElementById('webcam');
+      const ENABLE_CAM_BUTTON = document.getElementById('enableCam');
+      const RESET_BUTTON = document.getElementById('reset');
+      const TRAIN_BUTTON = document.getElementById('train');
+      const MOBILE_NET_INPUT_WIDTH = 224;
+      const MOBILE_NET_INPUT_HEIGHT = 224;
+      const STOP_DATA_GATHER = -1;
+      const CLASS_NAMES = [];
+      const consoleLog = document.getElementById('console-log');
+
+      
+      ENABLE_CAM_BUTTON.addEventListener('click', enableCam);
+      TRAIN_BUTTON.addEventListener('click', trainAndPredict);
+      RESET_BUTTON.addEventListener('click', reset);
+      
+  
+      
+   
+      
+      function enableCam() {
+        if (hasGetUserMedia()) {
+          // getUsermedia parameters.
+          const constraints = {
+            video: true,
+            width: 640, 
+            height: 480 
+          };
+      
+          // Activate the webcam stream.
+          navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+            VIDEO.srcObject = stream;
+            VIDEO.addEventListener('loadeddata', function() {
+              videoPlaying = true;
+              ENABLE_CAM_BUTTON.classList.add('removed');
             });
-
-            const prediction = await predictions.data();
-            const maxIndex = prediction.indexOf(Math.max(...prediction));
-            const emotions = ['Happy', 'Sad', 'Surprise', 'Neutral'];
-            labelContainer.textContent = `Emotion: ${emotions[maxIndex]}`;
-            tf.dispose(predictions);
-
-            setTimeout(predictEmotion, 1000); // Repeat prediction every second
+          });
+        } else {
+          console.warn('getUserMedia() is not supported by your browser');
         }
-
-        document.getElementById('enableCam').addEventListener('click', () => enableWebcam());
-        document.getElementById('detectEmotions').addEventListener('click', () => {
-            isDetecting = true;
-            predictEmotion();
+      }
+      //////
+      function trainAndPredict() {
+        async function trainAndPredict() {
+        predict = false;
+        tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
+        let outputsAsTensor = tf.tensor1d(trainingDataOutputs, 'int32');
+        let oneHotOutputs = tf.oneHot(outputsAsTensor, CLASS_NAMES.length);
+        let inputsAsTensor = tf.stack(trainingDataInputs);
+        
+        let results = await model.fit(inputsAsTensor, oneHotOutputs, {shuffle: true, batchSize: 5, epochs: 10, 
+            callbacks: {onEpochEnd: logProgress} });
+        
+        outputsAsTensor.dispose();
+        oneHotOutputs.dispose();
+        inputsAsTensor.dispose();
+        predict = true;
+        predictLoop();
+      }
+      ////
+      function logProgress(epoch, logs) {
+        console.log('Data for epoch ' + epoch, logs);
+      }
+        // TODO: Fill this out later in the codelab!
+      }
+      
+      
+      
+      
+      let dataCollectorButtons = document.querySelectorAll('button.dataCollector');
+      for (let i = 0; i < dataCollectorButtons.length; i++) {
+        dataCollectorButtons[i].addEventListener('mousedown', gatherDataForClass);
+        dataCollectorButtons[i].addEventListener('mouseup', gatherDataForClass);
+        // Populate the human readable names for classes.
+        CLASS_NAMES.push(dataCollectorButtons[i].getAttribute('data-name'));
+      }
+      
+      
+      function gatherDataForClass() {
+        let classNumber = parseInt(this.getAttribute('data-1hot'));
+        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+        dataGatherLoop();
+      }
+      
+      let mobilenet = undefined;
+      let gatherDataState = STOP_DATA_GATHER;
+      let videoPlaying = false;
+      let trainingDataInputs = [];
+      let trainingDataOutputs = [];
+      let examplesCount = [];
+      let predict = false;
+      
+      /**
+       * Loads the MobileNet model and warms it up so ready for use.
+       **/
+      async function loadMobileNetFeatureModel() {
+        const URL = 
+          'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1';
+        
+        mobilenet = await tf.loadGraphModel(URL, {fromTFHub: true});
+        STATUS.innerText = 'MobileNet v3 loaded successfully!';
+        
+        // Warm up the model by passing zeros through it once.
+        tf.tidy(function () {
+          let answer = mobilenet.predict(tf.zeros([1, MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH, 3]));
+          console.log(answer.shape);
         });
-        document.getElementById('useRearCamera').addEventListener('click', () => enableWebcam('environment'));
-        document.getElementById('useFrontCamera').addEventListener('click', () => enableWebcam('user'));
+      }
+      
+      // Call the function immediately to start loading.
+      loadMobileNetFeatureModel();
+      
+      let model = tf.sequential();
+      model.add(tf.layers.dense({inputShape: [1024], units: 128, activation: 'relu'}));
+      model.add(tf.layers.dense({inputShape: [1024], units: 128, activation: 'relu'}));
+      model.add(tf.layers.dense({units: CLASS_NAMES.length, activation: 'softmax'}));
+      
+      model.summary();
+      
+      // Compile the model with the defined optimizer and specify a loss function to use.
+      model.compile({
+        // Adam changes the learning rate over time which is useful.
+        optimizer: 'adam',
+        // Use the correct loss function. If 2 classes of data, must use binaryCrossentropy.
+        // Else categoricalCrossentropy is used if more than 2 classes.
+        loss: (CLASS_NAMES.length === 2) ? 'binaryCrossentropy': 'categoricalCrossentropy', 
+        // As this is a classification problem you can record accuracy in the logs too!
+        metrics: ['accuracy']  
+      });
+      
+      
+      
+      
+      /**
+       * Handle Data Gather for button mouseup/mousedown.
+       **/
+      function gatherDataForClass() {
+        let classNumber = parseInt(this.getAttribute('data-1hot'));
+        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+        dataGatherLoop();
+      }
 
-        loadModel();
-    </script>
-</body>
+      /**
+       * Loop to gather data from the webcam and store it in tensors.
+       **/
+      function dataGatherLoop() {
+        if (videoPlaying && gatherDataState !== STOP_DATA_GATHER) {
+          let imageFeatures = tf.tidy(function() {
+            let videoFrameAsTensor = tf.browser.fromPixels(VIDEO);
+            let resizedTensorFrame = tf.image.resizeBilinear(videoFrameAsTensor, [MOBILE_NET_INPUT_HEIGHT, 
+                MOBILE_NET_INPUT_WIDTH], true);
+            let normalizedTensorFrame = resizedTensorFrame.div(255);
+            return mobilenet.predict(normalizedTensorFrame.expandDims()).squeeze();
+          });
+      
+          trainingDataInputs.push(imageFeatures);
+          trainingDataOutputs.push(gatherDataState);
+          
+          // Intialize array index element if currently undefined.
+          if (examplesCount[gatherDataState] === undefined) {
+            examplesCount[gatherDataState] = 0;
+          }
+          examplesCount[gatherDataState]++;
+      
+          STATUS.innerText = '';
+          for (let n = 0; n < CLASS_NAMES.length; n++) {
+            STATUS.innerText += CLASS_NAMES[n] + ' data count: ' + examplesCount[n] + '. ';
+          }
+          window.requestAnimationFrame(dataGatherLoop);
+        }
+      }
+      
+      function logProgress(epoch, logs) {
+        console.log('Data for epoch ' + epoch, logs);
+      }
+        // TODO: Fill this out later in the codelab!
+      
+
+      function predictLoop() {
+        if (predict) {
+          tf.tidy(function() {
+            let videoFrameAsTensor = tf.browser.fromPixels(VIDEO).div(255);
+            let resizedTensorFrame = tf.image.resizeBilinear(videoFrameAsTensor,[MOBILE_NET_INPUT_HEIGHT, 
+                MOBILE_NET_INPUT_WIDTH], true);
+      
+            let imageFeatures = mobilenet.predict(resizedTensorFrame.expandDims());
+            let prediction = model.predict(imageFeatures).squeeze();
+            let highestIndex = prediction.argMax().arraySync();
+            let predictionArray = prediction.arraySync();
+      
+            STATUS.innerText = 'Prediction: ' + CLASS_NAMES[highestIndex] + ' with ' + Math.floor(predictionArray[highestIndex] * 100) + '% confidence';
+          });
+      
+          window.requestAnimationFrame(predictLoop);
+        }
+      }
+
+
+      function trainAndPredict() {
+        async function trainAndPredict() {
+        predict = false;
+        tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
+        let outputsAsTensor = tf.tensor1d(trainingDataOutputs, 'int32');
+        let oneHotOutputs = tf.oneHot(outputsAsTensor, CLASS_NAMES.length);
+        let inputsAsTensor = tf.stack(trainingDataInputs);
+        
+        let results = await model.fit(inputsAsTensor, oneHotOutputs, {shuffle: true, batchSize: 5, epochs: 10, 
+            callbacks: {onEpochEnd: logProgress} });
+        
+        outputsAsTensor.dispose();
+        oneHotOutputs.dispose();
+        inputsAsTensor.dispose();
+        predict = true;
+        predictLoop();
+      }
+    }
+
+
+
+      async function trainAndPredict() {
+        predict = false;
+        tf.util.shuffleCombo(trainingDataInputs, trainingDataOutputs);
+        let outputsAsTensor = tf.tensor1d(trainingDataOutputs, 'int32');
+        let oneHotOutputs = tf.oneHot(outputsAsTensor, CLASS_NAMES.length);
+        let inputsAsTensor = tf.stack(trainingDataInputs);
+        
+        let results = await model.fit(inputsAsTensor, oneHotOutputs, {shuffle: true, batchSize: 5, epochs: 10, 
+            callbacks: {onEpochEnd: logProgress} });
+        
+        outputsAsTensor.dispose();
+        oneHotOutputs.dispose();
+        inputsAsTensor.dispose();
+        predict = true;
+        predictLoop();
+      }
+   
+      function reset() {
+        predict = false;
+        examplesCount.length = 0;
+        for (let i = 0; i < trainingDataInputs.length; i++) {
+          trainingDataInputs[i].dispose();
+        }
+        trainingDataInputs.length = 0;
+        trainingDataOutputs.length = 0;
+        STATUS.innerText = 'No data collected';
+        
+        console.log('Tensors in memory: ' + tf.memory().numTensors);
+      }
+</script>
+
+<script>
+
+
+  let currentStream = null;
+  const video = document.getElementById('webcam');
+  const labelContainer = document.getElementById('label-container');
+  let emodel = null;
+  let isDetecting = false;
+  loadEModel();
+
+  async function loadEModel() {
+      labelContainer.textContent = 'Loading Emotion Detection model...';
+      emodel = await tf.loadLayersModel('public/facialemotions/model.json');
+      labelContainer.textContent = 'Emotion Model loaded successfully!';
+  }
+
+  async function enableWebcam(facingMode = 'user') {
+      if (navigator.mediaDevices.getUserMedia) {
+          if (currentStream) {
+              currentStream.getTracks().forEach(track => track.stop());
+          }
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+          video.srcObject = stream;
+          currentStream = stream;
+      }
+  }
+
+  async function predictEmotion() {
+      if (!emodel || !isDetecting) {
+          console.error('eModel not loaded or detection not enabled');
+          return;
+      }
+
+      const predictions = tf.tidy(() => {
+          const img = tf.browser.fromPixels(video).resizeNearestNeighbor([48, 48]).toFloat();
+          const offset = tf.scalar(255.0);
+          const normalized = img.div(offset);
+          const batched = normalized.expandDims(0);
+          return emodel.predict(batched);
+      });
+
+      const prediction = await predictions.data();
+      const maxIndex = prediction.indexOf(Math.max(...prediction));
+      const emotions = ['Happy', 'Sad', 'Surprise', 'Neutral'];
+      labelContainer.textContent = `Emotion: ${emotions[maxIndex]}`;
+      tf.dispose(predictions);
+
+      setTimeout(predictEmotion, 500); // Repeat prediction every second
+  }
+
+  document.getElementById('enableCam').addEventListener('click', () => enableWebcam());
+  document.getElementById('detectEmotions').addEventListener('click', () => {
+      isDetecting = true;
+      predictEmotion();
+  });
+  document.getElementById('useRearCamera').addEventListener('click', () => enableWebcam('environment'));
+  document.getElementById('useFrontCamera').addEventListener('click', () => enableWebcam('user'));
+
+
+</script>
+    </main>
+<script src="/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+   </body>
 </html>
