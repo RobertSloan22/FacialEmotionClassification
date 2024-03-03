@@ -38,7 +38,7 @@
 
       @media (min-width: 768px) {
         .bd-placeholder-img-lg {
-          font-size: 3.0rem;
+          font-size: 2.0rem;
         }
             }
       /* Base styles here */
@@ -46,7 +46,7 @@
       /* Responsive styles */
       @media (max-width: 768px) {
         body {
-          font-size: 14px;
+          font-size: 12px;
         }
     
     
@@ -155,7 +155,7 @@
       }
 
       #label-container {
-        font-size: 4em;
+        font-size: 2em;
         }
         #status {
           font-size: 2em;
@@ -164,7 +164,7 @@
           font-size: 2em;
       }
       #col-md-6 {
-        font-size: 2em;
+        font-size: 1em;
         width: 100%;
       }
       button {
@@ -632,7 +632,7 @@ function enableCam() {
 
   async function loadEModel() {
       labelContainer.textContent = 'Loading Emotion Detection model...';
-      emodel = await tf.loadLayersModel('facialemotions/model.json');
+      emodel = await tf.loadLayersModel('public/facialemotions/model.json');
       labelContainer.textContent = 'Emotion Model loaded successfully!';
   }
 
