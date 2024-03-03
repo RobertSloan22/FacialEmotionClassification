@@ -38,7 +38,7 @@
 
       @media (min-width: 768px) {
         .bd-placeholder-img-lg {
-          font-size: 3.5rem;
+          font-size: 3.0rem;
         }
             }
       /* Base styles here */
@@ -53,8 +53,8 @@
   /* Adjust layout, font sizes, and more for smaller screens */
     }
             .container {
-        width: 100%;
-        max-width: 1200px; /* or any maximum size */
+        width: 70%;
+        max-width: 1000px; /* or any maximum size */
         margin: 0 auto;
         padding: 10px;
          /* centers the layout */
@@ -74,8 +74,16 @@
 
       .b-example-divider {
         width: 100%;
-        height: 3rem;
-        background-color: rgba(0, 0, 0, .1);
+        height: 1rem;
+        background-color: rgba(0, 0, 0, 0.236);
+        border: solid rgba(0, 0, 0, .15);
+        border-width: 1px 0;
+        box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+      }
+      .b-example-divider2 {
+        width: 50%;
+        height: 1rem;
+        background-color: rgba(0, 0, 0, 0.236);
         border: solid rgba(0, 0, 0, .15);
         border-width: 1px 0;
         box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
@@ -119,9 +127,7 @@
         white-space: nowrap;
         -webkit-overflow-scrolling: touch;
       }
-      button {
-        margin: 30px; /* Adjust this value to add more or less space */
-      }
+     
 
       .btn-bd-primary {
         --bd-violet-bg: #712cf9;
@@ -150,21 +156,21 @@
 
       #label-container {
         font-size: 4em;
-    }
-    #status {
-      font-size: 2em;
-  }
-    #loadingIndicator {
-      font-size: 2em;
-  }
-  #col-md-6 {
-    font-size: 2em;
-    width: 100%;
-  }
-  button {
-    margin-top: 20px; /* Adjust this value to add more or less space */
-    margin-bottom: 20px; /* Adjust this value to add more or less space */
-  }
+        }
+        #status {
+          font-size: 2em;
+      }
+        #loadingIndicator {
+          font-size: 2em;
+      }
+      #col-md-6 {
+        font-size: 2em;
+        width: 100%;
+      }
+      button {
+        margin-top: 20px; /* Adjust this value to add more or less space */
+        margin-bottom: 20px; /* Adjust this value to add more or less space */
+      }
 
     </style>
 
@@ -187,7 +193,7 @@
           <h2> Step 1 for Training DNN & Emotion Detection is to Enable Web Camera </h2>
           <div class="col-md-6">
             <button id="enableCam" class="btn btn-primary mb-2">STEP 1 Enable Web Camera</button>
-            
+            <div class="b-example-divider2"></div>
           </div>
           <div class="d-flex align-items-center" id="status">
             <strong role="status">Awaiting TF.js load</strong>
@@ -196,8 +202,10 @@
           <div id="container">
             <video id="webcam" autoplay muted playsinline></video>
           </div>
+          
           <h3>Training Process:| Choose Camera Option | Collect Data for Object 1 | Collect Data for Object-2 | Train | Get Predictions</h3>
           <div class="row">
+            <div id="status"></div>
             <div class="col-md-6">
               <button id="useRearCamera" class="btn btn-secondary mb-2">Use Rear Camera</button>
       
@@ -205,17 +213,17 @@
             </div>
             <div class="col-md-6">
             </div>
-            
+            <div class="b-example-divider2"></div>
               <button class="dataCollector btn btn-primary mb-2" data-1hot="0" data-name="Class 1">Gather Object 1 Data</button>
            
            
               <button class="dataCollector btn btn-primary mb-2" data-1hot="1" data-name="Class 2">Gather Object 2 Data</button>
         
-          
+              <div class="b-example-divider2"></div>
               <button id="train" class="btn btn-primary mb-2">Train &amp; Predict!</button>
           
               <button id="reset" class="btn btn-primary mb-2">Reset</button>
-        
+              <div class="b-example-divider2"></div>
             <h2>Emotion Detection Deep Convolutional Neural Network</h2>  
             <h3>Emotion Model Built and Trained by Robert Sloan</h3> 
             <button id="detectEmotions" class="btn btn-primary mb-2">FEATURE 2: Detect Emotions</button>       
@@ -371,6 +379,7 @@ function enableCam() {
       const STOP_DATA_GATHER = -1;
       const CLASS_NAMES = [];
       const consoleLog = document.getElementById('console-log');
+      const TRAIN_STATUS = document.getElementById('train-status');
 
       
       ENABLE_CAM_BUTTON.addEventListener('click', enableCam);
@@ -623,7 +632,7 @@ function enableCam() {
 
   async function loadEModel() {
       labelContainer.textContent = 'Loading Emotion Detection model...';
-      emodel = await tf.loadLayersModel('public/facialemotions/model.json');
+      emodel = await tf.loadLayersModel('facialemotions/model.json');
       labelContainer.textContent = 'Emotion Model loaded successfully!';
   }
 
