@@ -637,7 +637,7 @@ function gatherDataForClass() {
 
   async function loadEModel() {
       labelContainer.textContent = 'Loading Emotion Detection model...';
-      emodel = await tf.loadLayersModel('facialemotions/model.json');
+      emodel = await tf.loadLayersModel('public/facialemotions/model.json');
       labelContainer.textContent = 'Emotion Model loaded successfully!';
   }
 
