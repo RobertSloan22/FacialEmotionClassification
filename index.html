@@ -46,7 +46,7 @@
       /* Responsive styles */
       @media (max-width: 768px) {
         body {
-          font-size: 12px;
+          font-size: 14px;
         }
     
     
@@ -54,7 +54,7 @@
     }
             .container {
         width: 70%;
-        max-width: 800px; /* or any maximum size */
+        max-width: 1000px; /* or any maximum size */
         margin: 0 auto;
         padding: 10px;
          /* centers the layout */
@@ -100,7 +100,7 @@
             }
               @media (max-width: 768px) {
         body {
-          font-size: 14px;
+          font-size: 16px;
           line-height: 1.5;
         }
       }
@@ -155,7 +155,7 @@
       }
 
       #label-container {
-        font-size: 2em;
+        font-size: 4em;
         }
         #status {
           font-size: 2em;
@@ -184,13 +184,13 @@
     <div class="container py-4">
       <header class="pb-3 mb-4 border-bottom">
         <a href="/" class="d-flex align-items-center text-body-emphasis text-decoration-none">
-          <span class="fs-4">Choose to either - Train A Deep Neural Network or Use Emotion Detection Deep Neural Network </span>
+          <span class="fs-4">Try out - Train A Deep Neural Network OR Use an Emotion Detection Deep Neural Network </span>
         </a>
       </header>
       <div class="p-5 mb-4 bg-body-tertiary rounded-3">
         <div class="container-fluid py-5">
-          <h1 class="display-5 fw-bold"> Tensorflow.js Deep Neural Networks -</h1>
-          <h2> Step 1 : Training DNN or Emotion Detection : Enable Web Camera </h2>
+          <h1 class="display-5 fw-bold"> Tensorflow.js - Train A Deep Neural Network -</h1>
+          <h2> Step 1 for Training DNN & Emotion Detection is to Enable Web Camera </h2>
           <div class="col-md-6">
             <button id="enableCam" class="btn btn-primary mb-2">STEP 1 Enable Web Camera</button>
             <div class="b-example-divider2"></div>
@@ -203,31 +203,46 @@
             <video id="webcam" autoplay muted playsinline></video>
           </div>
           
+        
+
+          
+          <h3>Training Process:| Choose Camera Option | Collect Data for Object 1 | Collect Data for Object-2 | Train | Get Predictions</h3>
           <div class="row">
             <div id="status"></div>
             <div class="col-md-6">
-              <button id="useRearCamera" class="btn btn-secondary mb-2">Step 2: Use Rear Camera</button>
+              <button id="useRearCamera" class="btn btn-secondary mb-2">Use Rear Camera</button>
       
-              <button id="useFrontCamera" class="btn btn-secondary mb-2">Step 2: Use Front Camera</button>
+              <button id="useFrontCamera" class="btn btn-secondary mb-2">Use Front Camera</button>
             </div>
             <div class="col-md-6">
             </div>
             <div class="b-example-divider2"></div>
-              <button class="dataCollector btn btn-primary mb-2" data-1hot="0" data-name="Class 1">Step 3: Gather Object 1 Data</button>
+              <button class="dataCollector btn btn-primary mb-2" data-1hot="0" data-name="Class 1">Gather Object 1 Data</button>
            
            
-              <button class="dataCollector btn btn-primary mb-2" data-1hot="1" data-name="Class 2">Step 3: Gather Object 2 Data</button>
+              <button class="dataCollector btn btn-primary mb-2" data-1hot="1" data-name="Class 2">Gather Object 2 Data</button>
         
               <div class="b-example-divider2"></div>
-              <button id="train" class="btn btn-primary mb-2">Step 4:Train &amp; Predict!</button>
+              <button id="train" class="btn btn-primary mb-2">Train &amp; Predict!</button>
           
               <button id="reset" class="btn btn-primary mb-2">Reset</button>
               <div class="b-example-divider2"></div>
-            <h2>Emotion Detection</h2>  
+
             <button id="detectEmotions" class="btn btn-primary mb-2">FEATURE 2: Detect Emotions</button>       
             <div id="label-container"></div>
           </div>
-         
+          <div class="card">
+            <div class="card-header">
+              
+            </div>
+            <div class="card-body">
+              <h2>Emotion Detection Deep Convolutional Neural Network</h2>  
+              <h3>Emotion Model Built and Trained by Robert Sloan</h3> 
+              <p class="card-text">View the code for the Neural 
+                networks and the code for integrating trained model into this web page on Github.</p>
+              <a href="#" class="btn btn-primary">Robert Sloan's Gitub</a>
+            </div>
+          </div>
         </div>
       <div>
     
@@ -263,19 +278,7 @@ document.querySelectorAll('.dataCollector').forEach(button => {
   
 });
 
-document.getElementById('.dataCollector').forEach(button => {
-  button.addEventListener('click', () => {
-    if (button.classList.contains('active')) {
-      startDataCollection(button);
-    } else {
-      stopDataCollection(button);
-    }
-  });
-  setTimeout(() => {
-    button.classList.add('active');
-  }, 2000);
-  
-});
+
 
     document.addEventListener('DOMContentLoaded', function() {
   // Show loading indicator
@@ -448,7 +451,22 @@ function enableCam() {
       }
       
       
-
+      function gatherDataForClass() {
+        let classNumber = parseInt(this.getAttribute('data-1hot'));
+        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+        if (gatherDataState !== STOP_DATA_GATHER) {
+            // Start gathering data
+            dataGatherLoop();
+            // Set a timeout to stop data gathering after 2 seconds
+            setTimeout(() => {
+                gatherDataState = STOP_DATA_GATHER;
+                console.log(`Data collection for class ${classNumber} stopped after 2 seconds.`);
+            }, 2000); // 2000 milliseconds = 2 seconds
+        } else {
+            // If for any reason gatherDataState is already STOP_DATA_GATHER, just log it
+            console.log(`Attempted to start data collection for class ${classNumber}, but it was already stopped.`);
+        }
+    }
       
       let mobilenet = undefined;
       let gatherDataState = STOP_DATA_GATHER;
@@ -499,35 +517,18 @@ function enableCam() {
       
       
       
+      /**
+       * Handle Data Gather for button mouseup/mousedown.
+       **/
+      function gatherDataForClass() {
+        let classNumber = parseInt(this.getAttribute('data-1hot'));
+        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+        dataGatherLoop();
+      }
 
-        function gatherDataForClass() {
-            let classNumber = parseInt(this.getAttribute('data-1hot'));
-            gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
-            if (gatherDataState !== STOP_DATA_GATHER) {
-                // Start gathering data
-                dataGatherLoop();
-                // Set a timeout to stop data gathering after 2 seconds
-                setTimeout(() => {
-                    gatherDataState = STOP_DATA_GATHER;
-                    console.log(`Data collection for class ${classNumber} stopped after 2 seconds.`);
-                }, 2000); // 2000 milliseconds = 2 seconds
-            } else {
-                // If for any reason gatherDataState is already STOP_DATA_GATHER, just log it
-                console.log(`Attempted to start data collection for class ${classNumber}, but it was already stopped.`);
-            }
-        }
-
-        // Event listeners for enabling camera, training the model, and resetting the application
-        ENABLE_CAM_BUTTON.addEventListener('click', enableCam);
-        TRAIN_BUTTON.addEventListener('click', trainAndPredict);
-        RESET_BUTTON.addEventListener('click', reset);
-
-        // Event listeners for data collection buttons
-        let dataCollectorButtons = document.querySelectorAll('button.dataCollector');
-        dataCollectorButtons.forEach(button => {
-            button.addEventListener('click', gatherDataForClass);
-        });
-  
+      /**
+       * Loop to gather data from the webcam and store it in tensors.
+       **/
       function dataGatherLoop() {
         if (videoPlaying && gatherDataState !== STOP_DATA_GATHER) {
           let imageFeatures = tf.tidy(function() {
@@ -645,7 +646,7 @@ function enableCam() {
 
   async function loadEModel() {
       labelContainer.textContent = 'Loading Emotion Detection model...';
-      emodel = await tf.loadLayersModel('public/facialemotions/model.json');
+      emodel = await tf.loadLayersModel('facialemotions/model.json');
       labelContainer.textContent = 'Emotion Model loaded successfully!';
   }
 
