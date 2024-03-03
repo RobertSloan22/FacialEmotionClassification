@@ -155,7 +155,7 @@
       }
 
       #label-container {
-        font-size: 4em;
+        font-size: 2em;
         }
         #status {
           font-size: 2em;
@@ -189,7 +189,7 @@
       </header>
       <div class="p-5 mb-4 bg-body-tertiary rounded-3">
         <div class="container-fluid py-5">
-          <h1 class="display-5 fw-bold"> Tensorflow.js - Train A Deep Neural Network -</h1>
+          <h1 class="display-5 fw-bold"> Tensorflow.js Deep Neural Networks -</h1>
           <h2> Step 1 : Training DNN or Emotion Detection : Enable Web Camera </h2>
           <div class="col-md-6">
             <button id="enableCam" class="btn btn-primary mb-2">STEP 1 Enable Web Camera</button>
@@ -223,7 +223,7 @@
           
               <button id="reset" class="btn btn-primary mb-2">Reset</button>
               <div class="b-example-divider2"></div>
-            <h2>Emotion Detection Deep Convolutional Neural Network</h2>  
+            <h2>Emotion Detection</h2>  
             <button id="detectEmotions" class="btn btn-primary mb-2">FEATURE 2: Detect Emotions</button>       
             <div id="label-container"></div>
           </div>
@@ -448,16 +448,7 @@ function enableCam() {
       }
       
       
-function gatherDataForClass() {
-  let classNumber = parseInt(this.getAttribute('data-1hot'));
-  gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
-  dataGatherLoop();
 
-  // Stop data gathering after 2000 milliseconds (2 seconds)
-  setTimeout(() => {
-    gatherDataState = STOP_DATA_GATHER;
-  }, 2000);
-}
       
       let mobilenet = undefined;
       let gatherDataState = STOP_DATA_GATHER;
@@ -508,18 +499,35 @@ function gatherDataForClass() {
       
       
       
-      /**
-       * Handle Data Gather for button mouseup/mousedown.
-       **/
-      function gatherDataForClass() {
-        let classNumber = parseInt(this.getAttribute('data-1hot'));
-        gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
-        dataGatherLoop();
-      }
 
-      /**
-       * Loop to gather data from the webcam and store it in tensors.
-       **/
+        function gatherDataForClass() {
+            let classNumber = parseInt(this.getAttribute('data-1hot'));
+            gatherDataState = (gatherDataState === STOP_DATA_GATHER) ? classNumber : STOP_DATA_GATHER;
+            if (gatherDataState !== STOP_DATA_GATHER) {
+                // Start gathering data
+                dataGatherLoop();
+                // Set a timeout to stop data gathering after 2 seconds
+                setTimeout(() => {
+                    gatherDataState = STOP_DATA_GATHER;
+                    console.log(`Data collection for class ${classNumber} stopped after 2 seconds.`);
+                }, 2000); // 2000 milliseconds = 2 seconds
+            } else {
+                // If for any reason gatherDataState is already STOP_DATA_GATHER, just log it
+                console.log(`Attempted to start data collection for class ${classNumber}, but it was already stopped.`);
+            }
+        }
+
+        // Event listeners for enabling camera, training the model, and resetting the application
+        ENABLE_CAM_BUTTON.addEventListener('click', enableCam);
+        TRAIN_BUTTON.addEventListener('click', trainAndPredict);
+        RESET_BUTTON.addEventListener('click', reset);
+
+        // Event listeners for data collection buttons
+        let dataCollectorButtons = document.querySelectorAll('button.dataCollector');
+        dataCollectorButtons.forEach(button => {
+            button.addEventListener('click', gatherDataForClass);
+        });
+  
       function dataGatherLoop() {
         if (videoPlaying && gatherDataState !== STOP_DATA_GATHER) {
           let imageFeatures = tf.tidy(function() {
