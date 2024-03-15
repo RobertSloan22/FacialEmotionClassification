@@ -189,7 +189,7 @@
       </header>
       <div class="p-5 mb-4 bg-body-tertiary rounded-3">
         <div class="container-fluid py-5">
-          <h2> class="display-5 fw-bold"> Enable Web Camera for all features</h2>
+          <h2>  Enable Web Camera for all features</h2>
          
           <div class="col-md-6">
             <button id="enableCam" class="btn btn-primary mb-2">STEP 1 Enable Web Camera</button>
@@ -261,7 +261,7 @@ document.getElementById('train').addEventListener('click', function() {
   setTimeout (() => {
     this.innerHTML = 'Train & Predict!';
     this.disabled = false;
-  }, 7000);
+  }, 15000);
 });
 
 document.querySelectorAll('.dataCollector').forEach(button => {
@@ -273,7 +273,7 @@ document.querySelectorAll('.dataCollector').forEach(button => {
     }
   });
   setTimeout(() => {
-    button.classList.add('active');
+    button.classList.add('disabled');
   }, 2000);
   
 });
