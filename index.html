@@ -264,18 +264,23 @@ document.getElementById('train').addEventListener('click', function() {
   }, 15000);
 });
 
+
 document.querySelectorAll('.dataCollector').forEach(button => {
   button.addEventListener('click', () => {
-    if (button.classList.contains('active')) {
+    // Ensure data collection starts only if not already active
+    if (!button.classList.contains('active')) {
+      button.classList.add('active'); // Mark as active
       startDataCollection(button);
-    } else {
-      stopDataCollection(button);
+
+      // Set a timeout to stop data collection after 5 seconds
+      setTimeout(() => {
+        if (button.classList.contains('active')) {
+          button.classList.remove('active'); // Remove 'active' indicating stopping
+          stopDataCollection(button);
+        }
+      }, 5000); // 5000 milliseconds = 5 seconds
     }
   });
-  setTimeout(() => {
-    button.classList.add('active');
-  }, 2000);
-  
 });
 
 
