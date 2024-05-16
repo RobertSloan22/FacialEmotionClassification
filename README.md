@@ -7,4 +7,3 @@ The web application activates and uses either the forward or rear camera on mobi
 Activate the emotion detection feature, keep your face 2 feet from the camera for best accuracy, and the predicted emotion will be displayed on the screen.
 
 
-Additionally the application's second feature is built with tensorflow.js, collect images quickly for 2 items. Click train and predict, and the data is then passed through a Neural network that will then give a confidence level prediction for each of the categorical items. 
