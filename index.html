@@ -85,6 +85,32 @@
       /* Sticky header positioning */
       #prediction-header {
         z-index: 1000;
+        transition: background-color 0.3s ease;
+      }
+
+      /* Banner color classes for different predictions */
+      #prediction-header.class-0 {
+        background-color: #0d6efd !important; /* Blue for Class 1 */
+      }
+
+      #prediction-header.class-1 {
+        background-color: #ffc107 !important; /* Yellow/Orange for Class 2 */
+      }
+
+      #prediction-header.class-human-0 {
+        background-color: #198754 !important; /* Green for Human 1 */
+      }
+
+      #prediction-header.class-human-1 {
+        background-color: #0dcaf0 !important; /* Cyan for Human 2 */
+      }
+
+      #prediction-header.class-item-0 {
+        background-color: #0d6efd !important; /* Blue for Item 1 */
+      }
+
+      #prediction-header.class-item-1 {
+        background-color: #ffc107 !important; /* Yellow/Orange for Item 2 */
       }
 
       /* Video container */
@@ -203,6 +229,29 @@
                   Collect training samples for two objects, then train a custom classification model.
                 </p>
 
+                <!-- Label Type Selection -->
+                <div class="card mb-3">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">Label Type</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="btn-group w-100" role="group" aria-label="Label type selection">
+                      <input type="radio" class="btn-check" name="labelType" id="labelTypeHuman" value="human" checked>
+                      <label class="btn btn-outline-primary" for="labelTypeHuman">
+                        <i class="bi bi-person me-1"></i> Human
+                      </label>
+
+                      <input type="radio" class="btn-check" name="labelType" id="labelTypeItem" value="item">
+                      <label class="btn btn-outline-primary" for="labelTypeItem">
+                        <i class="bi bi-box me-1"></i> Item
+                      </label>
+                    </div>
+                    <div class="alert alert-info small mt-2 mb-0">
+                      <i class="bi bi-info-circle me-1"></i> Select whether you're training on humans or items
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Data Collection Interface -->
                 <div class="card mb-3">
                   <div class="card-header bg-light">
@@ -213,7 +262,7 @@
                     <!-- Class 1 Collection -->
                     <div class="mb-3">
                       <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="form-label mb-0 fw-bold">Class 1 (Object A)</label>
+                        <label class="form-label mb-0 fw-bold" id="class1-label">Human 1</label>
                         <span id="class1-counter" class="badge bg-secondary">0/25</span>
                       </div>
                       <div class="progress mb-2" style="height: 8px;">
@@ -221,15 +270,15 @@
                              style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="25"></div>
                       </div>
                       <button class="dataCollector btn btn-lg btn-info w-100"
-                              data-1hot="0" data-name="Class 1" id="collectClass1">
-                        <i class="bi bi-record-circle me-2"></i> Collect Class 1 Samples
+                              data-1hot="0" data-name="Human 1" id="collectClass1">
+                        <i class="bi bi-record-circle me-2"></i> <span id="collectClass1-text">Collect Human 1 Samples</span>
                       </button>
                     </div>
 
                     <!-- Class 2 Collection -->
                     <div class="mb-3">
                       <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="form-label mb-0 fw-bold">Class 2 (Object B)</label>
+                        <label class="form-label mb-0 fw-bold" id="class2-label">Human 2</label>
                         <span id="class2-counter" class="badge bg-secondary">0/25</span>
                       </div>
                       <div class="progress mb-2" style="height: 8px;">
@@ -237,8 +286,8 @@
                              style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="25"></div>
                       </div>
                       <button class="dataCollector btn btn-lg btn-warning w-100"
-                              data-1hot="1" data-name="Class 2" id="collectClass2">
-                        <i class="bi bi-record-circle me-2"></i> Collect Class 2 Samples
+                              data-1hot="1" data-name="Human 2" id="collectClass2">
+                        <i class="bi bi-record-circle me-2"></i> <span id="collectClass2-text">Collect Human 2 Samples</span>
                       </button>
                     </div>
 
@@ -340,6 +389,7 @@
       const STOP_DATA_GATHER = -1;
       const MAX_SAMPLES_PER_CLASS = 25;
       const CLASS_NAMES = [];
+      let labelType = 'human'; // 'human' or 'item'
 
       // ========== GLOBAL STATE ==========
       let mobilenet = undefined;
@@ -464,16 +514,61 @@
         metrics: ['accuracy']
       });
 
+      // ========== LABEL TYPE MANAGEMENT ==========
+      function updateLabelType() {
+        const selectedType = document.querySelector('input[name="labelType"]:checked').value;
+        labelType = selectedType;
+
+        // Update class names based on label type
+        CLASS_NAMES.length = 0;
+        if (labelType === 'human') {
+          CLASS_NAMES.push('Human 1');
+          CLASS_NAMES.push('Human 2');
+        } else {
+          CLASS_NAMES.push('Item 1');
+          CLASS_NAMES.push('Item 2');
+        }
+
+        // Update UI labels
+        document.getElementById('class1-label').textContent = CLASS_NAMES[0];
+        document.getElementById('class2-label').textContent = CLASS_NAMES[1];
+        document.getElementById('collectClass1-text').textContent = `Collect ${CLASS_NAMES[0]} Samples`;
+        document.getElementById('collectClass2-text').textContent = `Collect ${CLASS_NAMES[1]} Samples`;
+
+        // Update button data-name attributes
+        document.getElementById('collectClass1').setAttribute('data-name', CLASS_NAMES[0]);
+        document.getElementById('collectClass2').setAttribute('data-name', CLASS_NAMES[1]);
+
+        // Reset if data has been collected (to prevent confusion)
+        if (trainingDataInputs.length > 0) {
+          if (confirm('Changing label type will reset all collected data. Continue?')) {
+            reset();
+          } else {
+            // Revert the radio button
+            document.getElementById(labelType === 'human' ? 'labelTypeItem' : 'labelTypeHuman').checked = true;
+            updateLabelType();
+            return;
+          }
+        }
+      }
+
       // ========== DATA COLLECTION ==========
       let dataCollectorButtons = document.querySelectorAll('button.dataCollector');
       for (let i = 0; i < dataCollectorButtons.length; i++) {
-        CLASS_NAMES.push(dataCollectorButtons[i].getAttribute('data-name'));
         dataCollectorButtons[i].addEventListener('mousedown', startDataCollection);
         dataCollectorButtons[i].addEventListener('touchstart', startDataCollection);
         dataCollectorButtons[i].addEventListener('mouseup', stopDataCollection);
         dataCollectorButtons[i].addEventListener('touchend', stopDataCollection);
         dataCollectorButtons[i].addEventListener('mouseleave', stopDataCollection);
       }
+
+      // Initialize label type (this will populate CLASS_NAMES)
+      updateLabelType();
+
+      // Add event listeners for label type changes
+      document.querySelectorAll('input[name="labelType"]').forEach(radio => {
+        radio.addEventListener('change', updateLabelType);
+      });
 
       // Rebuild model with correct number of classes
       if (CLASS_NAMES.length > 0) {
@@ -587,7 +682,8 @@
         const button = document.querySelector(`button[data-1hot="${classId}"]`);
         if (button && count >= MAX_SAMPLES_PER_CLASS) {
           button.disabled = true;
-          button.innerHTML = '<i class="bi bi-check-circle me-2"></i> 25 Samples Collected!';
+          const buttonTextId = classId === 0 ? 'collectClass1-text' : 'collectClass2-text';
+          button.innerHTML = `<i class="bi bi-check-circle me-2"></i> <span id="${buttonTextId}">25 Samples Collected!</span>`;
           button.classList.remove('collecting');
         }
       }
@@ -728,8 +824,18 @@
 
             // Update sticky header prediction
             const predictionHeader = document.getElementById('live-prediction');
+            const headerElement = document.getElementById('prediction-header');
             const confidence = Math.floor(predictionArray[highestIndex] * 100);
             predictionHeader.textContent = `${CLASS_NAMES[highestIndex]} (${confidence}%)`;
+
+            // Update banner color based on predicted class and label type
+            headerElement.classList.remove('class-0', 'class-1', 'class-human-0', 'class-human-1', 'class-item-0', 'class-item-1');
+            
+            if (labelType === 'human') {
+              headerElement.classList.add(`class-human-${highestIndex}`);
+            } else {
+              headerElement.classList.add(`class-item-${highestIndex}`);
+            }
           });
 
           window.requestAnimationFrame(predictLoop);
@@ -752,6 +858,10 @@
         // Reset UI elements
         STATUS.innerHTML = '<strong>No data collected</strong>';
         document.getElementById('live-prediction').textContent = 'Awaiting...';
+        
+        // Reset banner color
+        const headerElement = document.getElementById('prediction-header');
+        headerElement.classList.remove('class-0', 'class-1', 'class-human-0', 'class-human-1', 'class-item-0', 'class-item-1');
 
         // Reset counters and progress bars
         for (let i = 0; i < CLASS_NAMES.length; i++) {
@@ -761,7 +871,8 @@
           const button = document.querySelector(`button[data-1hot="${i}"]`);
           if (button) {
             button.disabled = false;
-            button.innerHTML = `<i class="bi bi-record-circle me-2"></i> Collect ${CLASS_NAMES[i]} Samples`;
+            const buttonText = i === 0 ? 'collectClass1-text' : 'collectClass2-text';
+            button.innerHTML = `<i class="bi bi-record-circle me-2"></i> <span id="${buttonText}">Collect ${CLASS_NAMES[i]} Samples</span>`;
             button.classList.remove('collecting');
           }
         }
