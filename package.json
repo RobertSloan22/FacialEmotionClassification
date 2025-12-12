@@ -4,7 +4,8 @@
   "description": "",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "live-server --port=8080 --open=/index.html"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,8 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "nodemon": "^3.1.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
   }
 }
