@@ -88,6 +88,23 @@
         transition: background-color 0.3s ease;
       }
 
+      /* Sticky video container - positioned below prediction header */
+      #video-container {
+        position: sticky;
+        top: 60px; /* Position below the prediction header */
+        z-index: 999;
+        background-color: white;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      /* Ensure video container stays visible on mobile */
+      @media (max-width: 768px) {
+        #video-container {
+          top: 50px; /* Slightly lower on mobile if header is smaller */
+        }
+      }
+
       /* Banner color classes for different predictions */
       #prediction-header.class-0 {
         background-color: #0d6efd !important; /* Blue for Class 1 */
@@ -138,7 +155,7 @@
         <h1 class="h4 text-center mb-3">TensorFlow.js - Facial Emotion & Object Detection</h1>
 
         <!-- Video Container - Always Visible -->
-        <div class="card mb-3 shadow-sm">
+        <div id="video-container" class="card mb-3 shadow-sm">
           <div class="card-body p-2">
             <video id="webcam" autoplay muted playsinline class="w-100 rounded"></video>
           </div>
