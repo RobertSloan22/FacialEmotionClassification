@@ -657,7 +657,7 @@
                    aria-valuemin="0" 
                    aria-valuemax="${MAX_SAMPLES_PER_CLASS}"></div>
             </div>
-            <button class="dataCollector btn btn-lg w-100"
+            <button class="dataCollector btn btn-lg w-100 mb-2"
                     data-1hot="${index}" 
                     data-name="${className}" 
                     id="collectClass${index}"
@@ -665,6 +665,20 @@
               <i class="bi bi-record-circle me-2"></i> 
               <span id="collectClass${index}-text">Collect ${className} Samples</span>
             </button>
+            <div class="input-group">
+              <input type="file" 
+                     class="form-control form-control-sm image-upload-input" 
+                     id="uploadClass${index}"
+                     accept="image/*"
+                     multiple
+                     data-class-index="${index}"
+                     style="display: none;">
+              <label for="uploadClass${index}" 
+                     class="btn btn-sm btn-outline-secondary w-100" 
+                     style="cursor: pointer;">
+                <i class="bi bi-upload me-1"></i> Upload Images
+              </label>
+            </div>
           `;
 
           container.appendChild(classItem);
@@ -693,6 +707,12 @@
           const removeBtn = classItem.querySelector('.remove-class-btn');
           if (removeBtn) {
             removeBtn.addEventListener('click', () => removeClass(index));
+          }
+
+          // Add file upload event listener
+          const uploadInput = classItem.querySelector('.image-upload-input');
+          if (uploadInput) {
+            uploadInput.addEventListener('change', (e) => handleImageUpload(e, index));
           }
 
           // Update UI with current count
@@ -784,6 +804,87 @@
           }
           
           renderClasses();
+        }
+      }
+
+      // ========== IMAGE UPLOAD ==========
+      async function handleImageUpload(event, classIndex) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        if (!mobilenet) {
+          alert('MobileNet model is still loading. Please wait...');
+          return;
+        }
+
+        // Check if we have room for more samples
+        const currentCount = examplesCount[classIndex] || 0;
+        const remainingSlots = MAX_SAMPLES_PER_CLASS - currentCount;
+        
+        if (remainingSlots <= 0) {
+          alert(`Maximum samples (${MAX_SAMPLES_PER_CLASS}) already collected for this class.`);
+          event.target.value = ''; // Reset file input
+          return;
+        }
+
+        const filesToProcess = Array.from(files).slice(0, remainingSlots);
+        let processedCount = 0;
+
+        for (const file of filesToProcess) {
+          if (examplesCount[classIndex] >= MAX_SAMPLES_PER_CLASS) {
+            break;
+          }
+
+          try {
+            // Create image element
+            const img = new Image();
+            const imageUrl = URL.createObjectURL(file);
+            
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = imageUrl;
+            });
+
+            // Process image through MobileNet (same as webcam frames)
+            const imageFeatures = tf.tidy(function() {
+              let imageTensor = tf.browser.fromPixels(img);
+              let resizedTensorFrame = tf.image.resizeBilinear(
+                imageTensor,
+                [MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH],
+                true
+              );
+              let normalizedTensorFrame = resizedTensorFrame.div(255);
+              return mobilenet.predict(normalizedTensorFrame.expandDims()).squeeze();
+            });
+
+            // Add to training data
+            trainingDataInputs.push(imageFeatures);
+            trainingDataOutputs.push(classIndex);
+
+            // Update count
+            if (examplesCount[classIndex] === undefined) {
+              examplesCount[classIndex] = 0;
+            }
+            examplesCount[classIndex]++;
+            processedCount++;
+
+            // Update UI
+            updateDataCollectionUI(classIndex, examplesCount[classIndex]);
+
+            // Clean up
+            URL.revokeObjectURL(imageUrl);
+          } catch (error) {
+            console.error('Error processing image:', error);
+            alert(`Error processing image: ${file.name}`);
+          }
+        }
+
+        // Reset file input
+        event.target.value = '';
+
+        if (processedCount > 0) {
+          console.log(`Processed ${processedCount} image(s) for class ${classIndex}`);
         }
       }
 
