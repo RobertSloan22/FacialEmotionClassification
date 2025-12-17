@@ -215,6 +215,40 @@
       .portfolio-iframe-container:hover iframe {
         transform: scale(1.01);
       }
+
+      /* Better label type button styling */
+      .btn-group label.btn {
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .btn-group label.btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      /* Step cards with colored borders */
+      .border-primary {
+        border-width: 2px !important;
+      }
+
+      .border-success {
+        border-width: 2px !important;
+      }
+
+      .border-warning {
+        border-width: 2px !important;
+      }
+
+      /* Highlight important buttons */
+      #train:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 20px rgba(13, 110, 253, 0.4);
+      }
     </style>
   </head>
   <body>
@@ -317,90 +351,121 @@
             <h2 class="accordion-header">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                       data-bs-target="#customTraining" aria-expanded="false" aria-controls="customTraining">
-                <i class="bi bi-mortarboard me-2"></i> Train Custom Model
+                <i class="bi bi-mortarboard me-2"></i> Train Your Own AI Model (Easy!)
               </button>
             </h2>
             <div id="customTraining" class="accordion-collapse collapse"
                  data-bs-parent="#featuresAccordion">
               <div class="accordion-body">
-                <p class="small text-muted mb-3">
-                  Collect training samples for multiple objects or people, then train a custom classification model.
-                </p>
+                <!-- Getting Started Guide -->
+                <div class="alert alert-primary mb-3">
+                  <h6 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>How This Works (3 Easy Steps!)</h6>
+                  <ol class="mb-0 small ps-3">
+                    <li><strong>Choose what to recognize:</strong> People or objects</li>
+                    <li><strong>Collect examples:</strong> Show the camera what you want it to learn (hold the button!)</li>
+                    <li><strong>Train:</strong> Click one button and the AI learns!</li>
+                  </ol>
+                  <hr class="my-2">
+                  <p class="small mb-0"><strong>Example:</strong> Want to tell cats from dogs? Add "Cat" and "Dog" as classes, show your camera examples of each, then train!</p>
+                </div>
 
-                <!-- Label Type Selection -->
-                <div class="card mb-3">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0">Label Type</h6>
+                <!-- Step 1: Choose What to Recognize -->
+                <div class="card mb-3 border-primary">
+                  <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><strong>STEP 1:</strong> What do you want to recognize?</h6>
                   </div>
                   <div class="card-body">
-                    <div class="btn-group w-100" role="group" aria-label="Label type selection">
+                    <p class="small text-muted mb-2">Choose whether you're training on people or objects/items:</p>
+                    <div class="btn-group w-100 mb-2" role="group" aria-label="Label type selection">
                       <input type="radio" class="btn-check" name="labelType" id="labelTypeHuman" value="human" checked>
                       <label class="btn btn-outline-primary" for="labelTypeHuman">
-                        <i class="bi bi-person me-1"></i> Human
+                        <i class="bi bi-person-fill me-1"></i>
+                        <div class="d-block">
+                          <strong>People</strong>
+                          <br><small>Names, faces, etc.</small>
+                        </div>
                       </label>
 
                       <input type="radio" class="btn-check" name="labelType" id="labelTypeItem" value="item">
                       <label class="btn btn-outline-primary" for="labelTypeItem">
-                        <i class="bi bi-box me-1"></i> Item
+                        <i class="bi bi-box-fill me-1"></i>
+                        <div class="d-block">
+                          <strong>Objects/Items</strong>
+                          <br><small>Cats, dogs, toys, etc.</small>
+                        </div>
                       </label>
-                    </div>
-                    <div class="alert alert-info small mt-2 mb-0">
-                      <i class="bi bi-info-circle me-1"></i> Select whether you're training on humans or items
                     </div>
                   </div>
                 </div>
 
                 <!-- Funny Mode Toggle (only for humans) -->
-                <div class="card mb-3" id="funny-mode-card" style="display: none;">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0">Funny Mode</h6>
+                <div class="card mb-3 border-warning" id="funny-mode-card" style="display: none;">
+                  <div class="card-header bg-warning">
+                    <h6 class="mb-0"><i class="bi bi-emoji-laughing me-2"></i>Fun Mode (Optional)</h6>
                   </div>
                   <div class="card-body">
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch mb-2">
                       <input class="form-check-input" type="checkbox" id="funnyModeToggle">
                       <label class="form-check-label" for="funnyModeToggle">
-                        Enable funny auto-labels
+                        <strong>Use silly auto-generated names</strong>
                       </label>
                     </div>
-                    <div class="alert alert-warning small mt-2 mb-0">
-                      <i class="bi bi-emoji-laughing me-1"></i> Auto-generates funny labels like "jerk face", "emo sad pants", etc.
-                    </div>
+                    <p class="small text-muted mb-0">
+                      <i class="bi bi-info-circle me-1"></i>
+                      When enabled, names like "Grumpy Pants", "Smiley McSmile" are auto-assigned. Perfect for fun demos!
+                    </p>
                   </div>
                 </div>
 
-                <!-- Data Collection Interface -->
-                <div class="card mb-3">
-                  <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Step 1: Collect Training Data</h6>
-                    <button id="add-class-btn" class="btn btn-sm btn-success">
-                      <i class="bi bi-plus-circle me-1"></i> Add Class
-                    </button>
-                  </div>
-                  <div class="card-body" id="classes-container">
-                    <!-- Dynamic classes will be added here -->
-                  </div>
-                  <div class="card-footer">
-                    <div class="alert alert-info small mb-0">
-                      <i class="bi bi-info-circle me-1"></i> Hold button to collect up to 25 samples per class
+                <!-- Step 2: Data Collection Interface -->
+                <div class="card mb-3 border-success">
+                  <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0"><strong>STEP 2:</strong> Collect Training Examples</h6>
+                      <button id="add-class-btn" class="btn btn-sm btn-light">
+                        <i class="bi bi-plus-circle me-1"></i> Add Another
+                      </button>
                     </div>
-                  </div>
-                </div>
-
-                <!-- Training Interface -->
-                <div class="card mb-3">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0">Step 2: Train Model</h6>
                   </div>
                   <div class="card-body">
-                    <button id="train" class="btn btn-lg btn-primary w-100 mb-3">
-                      <i class="bi bi-play-circle me-2"></i> Start Training
+                    <div class="alert alert-info mb-3">
+                      <h6 class="alert-heading mb-2"><i class="bi bi-question-circle me-2"></i>How to Collect Examples:</h6>
+                      <ul class="small mb-0 ps-3">
+                        <li><strong>Press and HOLD</strong> the green button while showing the camera what you want it to learn</li>
+                        <li>Collect <strong>at least 5 examples</strong> (more is better - up to 25!)</li>
+                        <li>Try different angles, lighting, and distances for better results</li>
+                        <li>You can also <strong>upload images</strong> instead of using the camera</li>
+                      </ul>
+                    </div>
+                    <div id="classes-container">
+                      <!-- Dynamic classes will be added here -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 3: Training Interface -->
+                <div class="card mb-3 border-warning">
+                  <div class="card-header bg-warning">
+                    <h6 class="mb-0"><strong>STEP 3:</strong> Train Your AI!</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="alert alert-success mb-3">
+                      <i class="bi bi-check-circle me-2"></i>
+                      <strong>Ready to train?</strong> Make sure you collected at least 5 examples for each class above. Then click the big button below!
+                    </div>
+                    <button id="train" class="btn btn-lg btn-primary w-100 mb-3" style="font-size: 1.2rem; padding: 1rem;">
+                      <i class="bi bi-rocket-takeoff me-2"></i> <strong>Train AI Now!</strong>
                     </button>
 
                     <!-- Training Progress (Initially Hidden) -->
                     <div id="training-progress-container" class="d-none">
+                      <div class="alert alert-info">
+                        <i class="bi bi-hourglass-split me-2"></i>
+                        <strong>Training in progress...</strong> The AI is learning from your examples. This usually takes 10-30 seconds.
+                      </div>
                       <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                          <span class="fw-bold">Training Progress</span>
+                          <span class="fw-bold">Progress</span>
                           <span id="epoch-counter" class="badge bg-primary">Epoch 0/10</span>
                         </div>
                         <div class="progress mb-2" style="height: 20px;">
@@ -415,6 +480,7 @@
                             <div class="card-body p-2 text-center">
                               <div class="small text-muted">Accuracy</div>
                               <div id="train-accuracy" class="fs-5 fw-bold text-success">--</div>
+                              <small class="text-muted">Higher is better</small>
                             </div>
                           </div>
                         </div>
@@ -423,19 +489,26 @@
                             <div class="card-body p-2 text-center">
                               <div class="small text-muted">Loss</div>
                               <div id="train-loss" class="fs-5 fw-bold text-danger">--</div>
+                              <small class="text-muted">Lower is better</small>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       <div class="alert alert-secondary small mb-0">
-                        <i class="bi bi-clock me-1"></i> Est. Time Remaining: <span id="time-remaining">Calculating...</span>
+                        <i class="bi bi-clock me-1"></i> Time Remaining: <span id="time-remaining">Calculating...</span>
                       </div>
                     </div>
 
+                    <hr>
+
                     <button id="reset" class="btn btn-outline-danger w-100">
-                      <i class="bi bi-arrow-counterclockwise me-2"></i> Reset All Data
+                      <i class="bi bi-trash me-2"></i> Start Over (Delete All Data)
                     </button>
+                    <p class="small text-muted text-center mt-2 mb-0">
+                      <i class="bi bi-exclamation-triangle me-1"></i>
+                      Warning: This will erase all collected examples
+                    </p>
                   </div>
                 </div>
               </div>
