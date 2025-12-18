@@ -437,6 +437,60 @@
                         <li>You can also <strong>upload images</strong> instead of using the camera</li>
                       </ul>
                     </div>
+
+                    <!-- Collection Mode Settings -->
+                    <div class="card mb-3 bg-light">
+                      <div class="card-body">
+                        <h6 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Collection Mode</h6>
+
+                        <!-- Mode Toggle -->
+                        <div class="btn-group w-100 mb-3" role="group" aria-label="Collection mode">
+                          <input type="radio" class="btn-check" name="collectionMode" id="collectionModeAuto" value="auto" checked>
+                          <label class="btn btn-outline-secondary" for="collectionModeAuto">
+                            <i class="bi bi-fast-forward-fill me-1"></i>
+                            <div class="d-block">
+                              <strong>Automatic</strong>
+                              <br><small>Hold button = many images</small>
+                            </div>
+                          </label>
+
+                          <input type="radio" class="btn-check" name="collectionMode" id="collectionModeManual" value="manual">
+                          <label class="btn btn-outline-secondary" for="collectionModeManual">
+                            <i class="bi bi-hand-index me-1"></i>
+                            <div class="d-block">
+                              <strong>Manual</strong>
+                              <br><small>1 click = 1 image</small>
+                            </div>
+                          </label>
+                        </div>
+
+                        <!-- Custom Sample Size (shown in manual mode) -->
+                        <div id="customSampleSizeContainer" style="display: none;">
+                          <label for="customSampleSize" class="form-label small mb-1">
+                            <i class="bi bi-image me-1"></i>How many images per class?
+                          </label>
+                          <input type="number"
+                                 class="form-control"
+                                 id="customSampleSize"
+                                 min="1"
+                                 max="100"
+                                 value="25"
+                                 placeholder="Enter number of images">
+                          <small class="text-muted">In manual mode, click the button this many times to collect all samples</small>
+                        </div>
+
+                        <!-- Mode Explanations -->
+                        <div class="alert alert-secondary mb-0 mt-2 small" id="autoModeExplanation">
+                          <i class="bi bi-info-circle me-1"></i>
+                          <strong>Automatic:</strong> Press and hold the button - it collects multiple images per second (up to 25 total)
+                        </div>
+                        <div class="alert alert-secondary mb-0 mt-2 small" id="manualModeExplanation" style="display: none;">
+                          <i class="bi bi-info-circle me-1"></i>
+                          <strong>Manual:</strong> Each click collects exactly 1 image. Perfect for precise control over your training data!
+                        </div>
+                      </div>
+                    </div>
+
                     <div id="classes-container">
                       <!-- Dynamic classes will be added here -->
                     </div>
@@ -585,7 +639,8 @@
       const MOBILE_NET_INPUT_WIDTH = 224;
       const MOBILE_NET_INPUT_HEIGHT = 224;
       const STOP_DATA_GATHER = -1;
-      const MAX_SAMPLES_PER_CLASS = 25;
+      let MAX_SAMPLES_PER_CLASS = 25; // Can be changed by user in manual mode
+      let COLLECTION_MODE = 'auto'; // 'auto' or 'manual'
       const CLASS_NAMES = [];
       const CLASS_COLORS = ['#0d6efd', '#ffc107', '#198754', '#0dcaf0', '#dc3545', '#6f42c1', '#fd7e14', '#20c997'];
       const FUNNY_LABELS = ['jerk face', 'emo sad pants', 'This Guy smells', 'Total Stud Muffin', 'Grumpy Pants', 'Smiley McSmile', 'Sleepy Head', 'Angry Bird'];
@@ -1087,6 +1142,43 @@
       // Funny mode toggle
       document.getElementById('funnyModeToggle').addEventListener('change', updateFunnyMode);
 
+      // Collection mode event listeners
+      document.querySelectorAll('input[name="collectionMode"]').forEach(radio => {
+        radio.addEventListener('change', updateCollectionMode);
+      });
+
+      document.getElementById('customSampleSize').addEventListener('change', updateSampleSize);
+
+      function updateCollectionMode(event) {
+        COLLECTION_MODE = event.target.value;
+        const customSizeContainer = document.getElementById('customSampleSizeContainer');
+        const autoExplanation = document.getElementById('autoModeExplanation');
+        const manualExplanation = document.getElementById('manualModeExplanation');
+
+        if (COLLECTION_MODE === 'manual') {
+          customSizeContainer.style.display = 'block';
+          autoExplanation.style.display = 'none';
+          manualExplanation.style.display = 'block';
+          // Update MAX_SAMPLES_PER_CLASS from input
+          updateSampleSize();
+        } else {
+          customSizeContainer.style.display = 'none';
+          autoExplanation.style.display = 'block';
+          manualExplanation.style.display = 'none';
+          MAX_SAMPLES_PER_CLASS = 25; // Reset to default
+          renderClasses(); // Re-render to update counters
+        }
+      }
+
+      function updateSampleSize() {
+        const input = document.getElementById('customSampleSize');
+        const value = parseInt(input.value);
+        if (value && value > 0 && value <= 100) {
+          MAX_SAMPLES_PER_CLASS = value;
+          renderClasses(); // Re-render to update all counters
+        }
+      }
+
       function startDataCollection(event) {
         event.preventDefault();
         const button = event.target.closest('.dataCollector');
@@ -1097,14 +1189,69 @@
           return;
         }
 
-        // Don't start if already collecting
-        if (gatherDataState !== STOP_DATA_GATHER) {
+        // Don't start if already collecting (auto mode only)
+        if (COLLECTION_MODE === 'auto' && gatherDataState !== STOP_DATA_GATHER) {
           return;
         }
 
+        // Manual mode: collect single image
+        if (COLLECTION_MODE === 'manual') {
+          collectSingleImage(classNumber);
+          return;
+        }
+
+        // Auto mode: continuous collection
         gatherDataState = classNumber;
         button.classList.add('collecting');
         dataGatherLoop();
+      }
+
+      function collectSingleImage(classNumber) {
+        if (!videoPlaying) {
+          console.log('Video not ready');
+          return;
+        }
+
+        // Check if we've reached the limit
+        if (examplesCount[classNumber] >= MAX_SAMPLES_PER_CLASS) {
+          console.log(`Reached maximum samples (${MAX_SAMPLES_PER_CLASS}) for class ${classNumber}`);
+          return;
+        }
+
+        // Collect one image
+        let imageFeatures = tf.tidy(function() {
+          let videoFrameAsTensor = tf.browser.fromPixels(VIDEO);
+          let resizedTensorFrame = tf.image.resizeBilinear(
+            videoFrameAsTensor,
+            [MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH],
+            true
+          );
+          let normalizedTensorFrame = resizedTensorFrame.div(255);
+          return mobilenet.predict(normalizedTensorFrame.expandDims()).squeeze();
+        });
+
+        trainingDataInputs.push(imageFeatures);
+        trainingDataOutputs.push(classNumber);
+
+        // Initialize array index element if currently undefined
+        if (examplesCount[classNumber] === undefined) {
+          examplesCount[classNumber] = 0;
+        }
+        examplesCount[classNumber]++;
+
+        // Update UI with counter and progress bar
+        updateDataCollectionUI(classNumber, examplesCount[classNumber]);
+
+        // Add visual feedback
+        const button = document.getElementById(`collectClass${classNumber}`);
+        if (button) {
+          button.classList.add('collecting');
+          setTimeout(() => {
+            button.classList.remove('collecting');
+          }, 200);
+        }
+
+        console.log(`Collected image ${examplesCount[classNumber]}/${MAX_SAMPLES_PER_CLASS} for class ${classNumber}`);
       }
 
       function stopDataCollection(event) {
