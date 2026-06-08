@@ -202,6 +202,26 @@
         }
       }
 
+      /* Face masking canvas overlay */
+      #mask-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0.375rem;
+        display: none;
+      }
+
+      #mask-canvas.active {
+        display: block;
+      }
+
+      .mask-type-btn.active {
+        font-weight: 600;
+      }
+
       /* Portfolio iframe styling */
       .portfolio-iframe-container {
         transition: all 0.3s ease;
@@ -237,6 +257,8 @@
         <div id="video-container" class="card mb-3 shadow-sm">
           <div class="card-body p-2 position-relative">
             <video id="webcam" autoplay muted playsinline class="w-100 rounded"></video>
+            <!-- Face masking canvas - sits on top of the video when masking is active -->
+            <canvas id="mask-canvas"></canvas>
             <!-- Prediction Overlay -->
             <div id="prediction-overlay" class="hidden">Awaiting...</div>
           </div>
@@ -438,6 +460,99 @@
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 4: Face Masking (Python backend) -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#faceMasking" aria-expanded="false" aria-controls="faceMasking">
+                <i class="bi bi-incognito me-2"></i> Face Masking
+                <span class="badge bg-secondary ms-2">Python</span>
+              </button>
+            </h2>
+            <div id="faceMasking" class="accordion-collapse collapse"
+                 data-bs-parent="#featuresAccordion">
+              <div class="accordion-body">
+
+                <!-- Setup instructions -->
+                <div class="alert alert-info small mb-3">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Requires the Python mask server running locally.<br>
+                  <strong>Setup:</strong>
+                  <code class="ms-1">pip install -r requirements.txt</code> then
+                  <code class="ms-1">python mask_server.py</code>
+                </div>
+
+                <!-- Mask type selector -->
+                <div class="card mb-3">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">Mask Style</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-2" id="mask-type-buttons">
+
+                      <div class="col-6">
+                        <input type="radio" class="btn-check" name="maskType" id="maskBlur" value="blur" checked>
+                        <label class="btn btn-outline-primary w-100" for="maskBlur">
+                          <i class="bi bi-droplet me-1"></i> Blur
+                        </label>
+                      </div>
+
+                      <div class="col-6">
+                        <input type="radio" class="btn-check" name="maskType" id="maskPixelate" value="pixelate">
+                        <label class="btn btn-outline-primary w-100" for="maskPixelate">
+                          <i class="bi bi-grid-3x3 me-1"></i> Pixelate
+                        </label>
+                      </div>
+
+                      <div class="col-6">
+                        <input type="radio" class="btn-check" name="maskType" id="maskBlackbox" value="blackbox">
+                        <label class="btn btn-outline-dark w-100" for="maskBlackbox">
+                          <i class="bi bi-square-fill me-1"></i> Black Box
+                        </label>
+                      </div>
+
+                      <div class="col-6">
+                        <input type="radio" class="btn-check" name="maskType" id="maskWhitebox" value="whitebox">
+                        <label class="btn btn-outline-secondary w-100" for="maskWhitebox">
+                          <i class="bi bi-square me-1"></i> White Box
+                        </label>
+                      </div>
+
+                      <div class="col-6">
+                        <input type="radio" class="btn-check" name="maskType" id="maskOvalBlur" value="oval_blur">
+                        <label class="btn btn-outline-info w-100" for="maskOvalBlur">
+                          <i class="bi bi-circle me-1"></i> Oval Blur
+                        </label>
+                      </div>
+
+                      <div class="col-6">
+                        <input type="radio" class="btn-check" name="maskType" id="maskNone" value="none">
+                        <label class="btn btn-outline-success w-100" for="maskNone">
+                          <i class="bi bi-eye-slash me-1"></i> None (detect only)
+                        </label>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Enable / disable masking -->
+                <div class="d-grid gap-2">
+                  <button id="toggle-masking" class="btn btn-lg btn-primary">
+                    <i class="bi bi-shield-shaded me-2"></i> Enable Masking
+                  </button>
+                </div>
+
+                <!-- Status row -->
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                  <div id="mask-status" class="small text-muted">Server not connected</div>
+                  <div id="mask-face-count" class="badge bg-secondary"></div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1463,6 +1578,131 @@
         const stickyValue = document.getElementById('sticky-emotion-value');
         stickyPanel.classList.add('d-none');
         stickyValue.textContent = 'Not detecting';
+      });
+
+      // ========== FACE MASKING (Python backend) ==========
+      const MASK_SERVER = 'http://localhost:5001';
+      const maskCanvas = document.getElementById('mask-canvas');
+      const maskCtx = maskCanvas.getContext('2d');
+      let maskingEnabled = false;
+      let selectedMaskType = 'blur';
+      let maskLoopTimer = null;
+
+      async function pingMaskServer() {
+        try {
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 2500);
+          const resp = await fetch(`${MASK_SERVER}/health`, { signal: controller.signal });
+          clearTimeout(t);
+          const data = await resp.json();
+          return data.status === 'ok';
+        } catch {
+          return false;
+        }
+      }
+
+      async function sendFrameForMasking() {
+        if (!maskingEnabled || !videoPlaying) return;
+
+        // Capture current video frame
+        const tmp = document.createElement('canvas');
+        tmp.width = VIDEO.videoWidth || 640;
+        tmp.height = VIDEO.videoHeight || 480;
+        tmp.getContext('2d').drawImage(VIDEO, 0, 0, tmp.width, tmp.height);
+        const b64 = tmp.toDataURL('image/jpeg', 0.8);
+
+        try {
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 3000);
+          const resp = await fetch(`${MASK_SERVER}/mask`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: b64, mask_type: selectedMaskType }),
+            signal: controller.signal
+          });
+          clearTimeout(t);
+
+          const data = await resp.json();
+          if (data.image) {
+            const img = new Image();
+            img.onload = () => {
+              maskCanvas.width = VIDEO.offsetWidth;
+              maskCanvas.height = VIDEO.offsetHeight;
+              maskCtx.drawImage(img, 0, 0, maskCanvas.width, maskCanvas.height);
+            };
+            img.src = data.image;
+
+            const countBadge = document.getElementById('mask-face-count');
+            countBadge.textContent =
+              data.faces_detected === 0
+                ? 'No face detected'
+                : `${data.faces_detected} face${data.faces_detected > 1 ? 's' : ''} masked`;
+            countBadge.className =
+              data.faces_detected > 0 ? 'badge bg-success' : 'badge bg-warning text-dark';
+          }
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            document.getElementById('mask-status').innerHTML =
+              '<span class="text-danger">Server connection lost. Masking paused.</span>';
+            stopMasking();
+          }
+        }
+
+        if (maskingEnabled) {
+          maskLoopTimer = setTimeout(sendFrameForMasking, 120); // ~8 fps
+        }
+      }
+
+      function stopMasking() {
+        maskingEnabled = false;
+        clearTimeout(maskLoopTimer);
+        maskCanvas.classList.remove('active');
+        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        const btn = document.getElementById('toggle-masking');
+        btn.innerHTML = '<i class="bi bi-shield-shaded me-2"></i> Enable Masking';
+        btn.classList.replace('btn-danger', 'btn-primary');
+        document.getElementById('mask-face-count').textContent = '';
+      }
+
+      document.getElementById('toggle-masking').addEventListener('click', async () => {
+        const btn = document.getElementById('toggle-masking');
+        const statusEl = document.getElementById('mask-status');
+
+        if (!videoPlaying) {
+          statusEl.innerHTML = '<span class="text-danger">Enable the camera first.</span>';
+          return;
+        }
+
+        if (!maskingEnabled) {
+          statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Connecting to mask server…</span>';
+          btn.disabled = true;
+
+          const ok = await pingMaskServer();
+          btn.disabled = false;
+
+          if (!ok) {
+            statusEl.innerHTML =
+              '<span class="text-danger">Cannot reach server at localhost:5001. Run: <code>python mask_server.py</code></span>';
+            return;
+          }
+
+          maskingEnabled = true;
+          maskCanvas.classList.add('active');
+          btn.innerHTML = '<i class="bi bi-shield-x me-2"></i> Disable Masking';
+          btn.classList.replace('btn-primary', 'btn-danger');
+          statusEl.innerHTML = '<span class="text-success">Masking active via Python server</span>';
+          sendFrameForMasking();
+        } else {
+          stopMasking();
+          statusEl.innerHTML = '<span class="text-muted">Masking disabled</span>';
+        }
+      });
+
+      // Update mask type when radio button changes
+      document.querySelectorAll('input[name="maskType"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          selectedMaskType = radio.value;
+        });
       });
     </script>
   </body>
