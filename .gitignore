@@ -6,3 +6,10 @@ AppliedDataScience
 env
 .env
 /node_modules
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
