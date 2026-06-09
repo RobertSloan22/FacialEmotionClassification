@@ -16,6 +16,9 @@
     <!-- TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
 
+    <!-- BlazeFace – lightweight in-browser face detector (used by Face Masking) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
+
     <style>
       /* Mobile-First Responsive Styles */
       @media (max-width: 768px) {
@@ -477,13 +480,11 @@
                  data-bs-parent="#featuresAccordion">
               <div class="accordion-body">
 
-                <!-- Setup instructions -->
+                <!-- Description -->
                 <div class="alert alert-info small mb-3">
                   <i class="bi bi-info-circle me-1"></i>
-                  Requires the Python mask server running locally.<br>
-                  <strong>Setup:</strong>
-                  <code class="ms-1">pip install -r requirements.txt</code> then
-                  <code class="ms-1">python mask_server.py</code>
+                  Masks detected faces in real time, entirely in your browser — no server required.
+                  Uses the BlazeFace model (via TensorFlow.js) for face detection and the Canvas 2D API for masking.
                 </div>
 
                 <!-- Mask type selector -->
@@ -1580,77 +1581,153 @@
         stickyValue.textContent = 'Not detecting';
       });
 
-      // ========== FACE MASKING (Python backend) ==========
-      const MASK_SERVER = 'http://localhost:5001';
+      // ========== FACE MASKING (browser-native, no server required) ==========
       const maskCanvas = document.getElementById('mask-canvas');
       const maskCtx = maskCanvas.getContext('2d');
       let maskingEnabled = false;
       let selectedMaskType = 'blur';
       let maskLoopTimer = null;
+      let blazeFaceModel = null;
 
-      async function pingMaskServer() {
+      // Persistent offscreen canvas reused each frame for blur/pixelate effects
+      let _offCanvas = null;
+      let _offCtx = null;
+
+      function _getOffCanvas(w, h) {
+        if (!_offCanvas) {
+          _offCanvas = document.createElement('canvas');
+          _offCtx = _offCanvas.getContext('2d');
+        }
+        if (_offCanvas.width !== w || _offCanvas.height !== h) {
+          _offCanvas.width = w;
+          _offCanvas.height = h;
+        }
+        return [_offCanvas, _offCtx];
+      }
+
+      // Load BlazeFace model eagerly so the first Enable click is instant
+      (async () => {
         try {
-          const controller = new AbortController();
-          const t = setTimeout(() => controller.abort(), 2500);
-          const resp = await fetch(`${MASK_SERVER}/health`, { signal: controller.signal });
-          clearTimeout(t);
-          const data = await resp.json();
-          return data.status === 'ok';
-        } catch {
-          return false;
+          blazeFaceModel = await blazeface.load();
+          document.getElementById('mask-status').innerHTML =
+            '<span class="text-success">Face detector ready</span>';
+        } catch (err) {
+          console.warn('BlazeFace load failed:', err);
+          document.getElementById('mask-status').innerHTML =
+            '<span class="text-danger">Face detector failed to load</span>';
+        }
+      })();
+
+      // --- Mask drawing helpers ---
+
+      function _drawBlur(ctx, video, boxes, cw, ch) {
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, cw, ch);
+        const [oc, octx] = _getOffCanvas(cw, ch);
+        octx.filter = 'blur(18px)';
+        octx.drawImage(video, 0, 0, cw, ch);
+        octx.filter = 'none';
+        for (const { x, y, w, h } of boxes) ctx.drawImage(oc, x, y, w, h, x, y, w, h);
+      }
+
+      function _drawOvalBlur(ctx, video, boxes, cw, ch) {
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, cw, ch);
+        const [oc, octx] = _getOffCanvas(cw, ch);
+        octx.filter = 'blur(18px)';
+        octx.drawImage(video, 0, 0, cw, ch);
+        octx.filter = 'none';
+        for (const { x, y, w, h } of boxes) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(oc, x, y, w, h, x, y, w, h);
+          ctx.restore();
         }
       }
 
-      async function sendFrameForMasking() {
-        if (!maskingEnabled || !videoPlaying) return;
+      function _drawPixelate(ctx, video, boxes, cw, ch) {
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, cw, ch);
+        const block = 14;
+        const [oc, octx] = _getOffCanvas(cw, ch);
+        for (const { x, y, w, h } of boxes) {
+          const sw = Math.max(1, Math.round(w / block));
+          const sh = Math.max(1, Math.round(h / block));
+          octx.drawImage(video, x, y, w, h, 0, 0, sw, sh);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(oc, 0, 0, sw, sh, x, y, w, h);
+          ctx.imageSmoothingEnabled = true;
+        }
+      }
 
-        // Capture current video frame
-        const tmp = document.createElement('canvas');
-        tmp.width = VIDEO.videoWidth || 640;
-        tmp.height = VIDEO.videoHeight || 480;
-        tmp.getContext('2d').drawImage(VIDEO, 0, 0, tmp.width, tmp.height);
-        const b64 = tmp.toDataURL('image/jpeg', 0.8);
+      function _drawColorBox(ctx, video, boxes, cw, ch, color) {
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, cw, ch);
+        ctx.fillStyle = color;
+        for (const { x, y, w, h } of boxes) ctx.fillRect(x, y, w, h);
+      }
 
+      function _drawNone(ctx, video, boxes, cw, ch) {
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, cw, ch);
+        ctx.strokeStyle = '#00ff44';
+        ctx.lineWidth = 2;
+        for (const { x, y, w, h } of boxes) ctx.strokeRect(x, y, w, h);
+      }
+
+      // --- Main masking loop ---
+
+      async function runMaskFrame() {
+        if (!maskingEnabled || !videoPlaying || !blazeFaceModel) return;
+
+        const cw = VIDEO.offsetWidth;
+        const ch = VIDEO.offsetHeight;
+        if (maskCanvas.width !== cw) maskCanvas.width = cw;
+        if (maskCanvas.height !== ch) maskCanvas.height = ch;
+
+        let boxes = [];
         try {
-          const controller = new AbortController();
-          const t = setTimeout(() => controller.abort(), 3000);
-          const resp = await fetch(`${MASK_SERVER}/mask`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: b64, mask_type: selectedMaskType }),
-            signal: controller.signal
-          });
-          clearTimeout(t);
+          const preds = await blazeFaceModel.estimateFaces(VIDEO, false);
+          const sx = cw / (VIDEO.videoWidth || cw);
+          const sy = ch / (VIDEO.videoHeight || ch);
 
-          const data = await resp.json();
-          if (data.image) {
-            const img = new Image();
-            img.onload = () => {
-              maskCanvas.width = VIDEO.offsetWidth;
-              maskCanvas.height = VIDEO.offsetHeight;
-              maskCtx.drawImage(img, 0, 0, maskCanvas.width, maskCanvas.height);
+          boxes = preds.map(p => {
+            const bx = p.topLeft[0] * sx,  by = p.topLeft[1] * sy;
+            const bw = (p.bottomRight[0] - p.topLeft[0]) * sx;
+            const bh = (p.bottomRight[1] - p.topLeft[1]) * sy;
+            const px = bw * 0.12,  py = bh * 0.12;
+            return {
+              x: Math.max(0, Math.round(bx - px)),
+              y: Math.max(0, Math.round(by - py)),
+              w: Math.min(Math.round(bw + 2 * px), cw),
+              h: Math.min(Math.round(bh + 2 * py), ch)
             };
-            img.src = data.image;
-
-            const countBadge = document.getElementById('mask-face-count');
-            countBadge.textContent =
-              data.faces_detected === 0
-                ? 'No face detected'
-                : `${data.faces_detected} face${data.faces_detected > 1 ? 's' : ''} masked`;
-            countBadge.className =
-              data.faces_detected > 0 ? 'badge bg-success' : 'badge bg-warning text-dark';
-          }
+          });
         } catch (err) {
-          if (err.name !== 'AbortError') {
-            document.getElementById('mask-status').innerHTML =
-              '<span class="text-danger">Server connection lost. Masking paused.</span>';
-            stopMasking();
-          }
+          console.warn('Face detection error:', err);
         }
 
-        if (maskingEnabled) {
-          maskLoopTimer = setTimeout(sendFrameForMasking, 120); // ~8 fps
+        switch (selectedMaskType) {
+          case 'blur':      _drawBlur(maskCtx, VIDEO, boxes, cw, ch);             break;
+          case 'oval_blur': _drawOvalBlur(maskCtx, VIDEO, boxes, cw, ch);         break;
+          case 'pixelate':  _drawPixelate(maskCtx, VIDEO, boxes, cw, ch);         break;
+          case 'blackbox':  _drawColorBox(maskCtx, VIDEO, boxes, cw, ch, 'black'); break;
+          case 'whitebox':  _drawColorBox(maskCtx, VIDEO, boxes, cw, ch, 'white'); break;
+          default:          _drawNone(maskCtx, VIDEO, boxes, cw, ch);
         }
+
+        const badge = document.getElementById('mask-face-count');
+        if (boxes.length > 0) {
+          badge.textContent = `${boxes.length} face${boxes.length > 1 ? 's' : ''} masked`;
+          badge.className = 'badge bg-success';
+        } else {
+          badge.textContent = 'No face detected';
+          badge.className = 'badge bg-warning text-dark';
+        }
+
+        if (maskingEnabled) maskLoopTimer = setTimeout(runMaskFrame, 130);
       }
 
       function stopMasking() {
@@ -1664,45 +1741,34 @@
         document.getElementById('mask-face-count').textContent = '';
       }
 
-      document.getElementById('toggle-masking').addEventListener('click', async () => {
-        const btn = document.getElementById('toggle-masking');
+      document.getElementById('toggle-masking').addEventListener('click', () => {
         const statusEl = document.getElementById('mask-status');
 
         if (!videoPlaying) {
           statusEl.innerHTML = '<span class="text-danger">Enable the camera first.</span>';
           return;
         }
+        if (!blazeFaceModel) {
+          statusEl.innerHTML = '<span class="text-warning">Face detector still loading, please wait…</span>';
+          return;
+        }
 
         if (!maskingEnabled) {
-          statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Connecting to mask server…</span>';
-          btn.disabled = true;
-
-          const ok = await pingMaskServer();
-          btn.disabled = false;
-
-          if (!ok) {
-            statusEl.innerHTML =
-              '<span class="text-danger">Cannot reach server at localhost:5001. Run: <code>python mask_server.py</code></span>';
-            return;
-          }
-
           maskingEnabled = true;
           maskCanvas.classList.add('active');
+          const btn = document.getElementById('toggle-masking');
           btn.innerHTML = '<i class="bi bi-shield-x me-2"></i> Disable Masking';
           btn.classList.replace('btn-primary', 'btn-danger');
-          statusEl.innerHTML = '<span class="text-success">Masking active via Python server</span>';
-          sendFrameForMasking();
+          statusEl.innerHTML = '<span class="text-success">Masking active</span>';
+          runMaskFrame();
         } else {
           stopMasking();
           statusEl.innerHTML = '<span class="text-muted">Masking disabled</span>';
         }
       });
 
-      // Update mask type when radio button changes
       document.querySelectorAll('input[name="maskType"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-          selectedMaskType = radio.value;
-        });
+        radio.addEventListener('change', () => { selectedMaskType = radio.value; });
       });
     </script>
   </body>

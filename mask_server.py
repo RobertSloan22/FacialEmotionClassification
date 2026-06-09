@@ -1,8 +1,21 @@
 """
-Face Masking Server
--------------------
-Flask backend that receives a base64-encoded video frame and returns the
-same frame with the detected face(s) masked according to the chosen style.
+Face Masking Server  (optional – local use only)
+-------------------------------------------------
+The main app (index.html) performs face masking entirely in the browser
+using TensorFlow.js + BlazeFace, so NO server is required for GitHub Pages.
+
+This script is provided as an alternative for local / offline environments
+where you want Python-side processing (e.g. heavier OpenCV effects, saving
+masked frames to disk, or integrating with other Python pipelines).
+
+Usage
+-----
+  pip install -r requirements.txt
+  python mask_server.py          # starts on http://localhost:5001
+
+To use it from the browser, open index.html while the server is running.
+The frontend will prefer the in-browser path; to force the Python path you
+would need to modify the JS to POST to MASK_SERVER instead.
 
 Mask types
 ----------
@@ -12,9 +25,6 @@ blackbox   – Solid black rectangle over the face
 whitebox   – Solid white rectangle over the face
 oval_blur  – Elliptical Gaussian blur (follows face shape)
 none       – No masking (pass-through, useful for testing)
-
-Run with:  python mask_server.py
-Default port: 5001
 """
 
 from flask import Flask, request, jsonify
